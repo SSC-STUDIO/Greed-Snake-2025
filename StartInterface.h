@@ -25,7 +25,7 @@ void LoadButton() {
 
 void DrawMenu() {
     ExMessage m; // 消息
-    peekmessage(&m, EX_MOUSE); // 预取消息
+    peekmessage(&m, EX_MOUSE); /
     Vector2 mousePos = Vector2(m.x, m.y); // 鼠标位置
 
     for (int i = 0; i < ButtonType::Num; ++i) {

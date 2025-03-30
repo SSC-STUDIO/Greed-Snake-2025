@@ -3,7 +3,7 @@
 #include "GameState.h"
 #include <tchar.h>
 #include <windows.h>
-#pragma comment(lib, "winmm.lib") // 多媒体函数所需
+#pragma comment(lib, "winmm.lib") 
 #pragma warning(disable: 4996)	 // 禁用关于 _tcscpy 和 _stprintf 的安全警告
 
 // 设置结构

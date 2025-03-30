@@ -45,10 +45,8 @@ public:
     void UpdateBody(const Snake& lastBody, Snake& currentBody);
     virtual void Draw(const Camera& camera) const;
 
-    // 声明碰撞检测方法，但不在头文件实现
     virtual bool CheckCollisionWith(const Snake& other) const;
     
-    // 声明碰撞检测方法，但不在头文件实现
     virtual bool CheckCollisionWithPoint(const Vector2& point, float pointRadius) const;
 };
 
@@ -70,7 +68,7 @@ public:
     float speedMultiplier = 1.0f; // 速度乘数
     float aggressionFactor = GameConfig::Difficulty::Normal::AI_AGGRESSION; // 添加攻击性因子
     std::vector<Snake> segments;  // 添加AI蛇身体的段
-    std::deque<Vector2> recordedPositions; // 添加位置历史记录，用于身体段的平滑跟随
+    std::deque<Vector2> recordedPositions; 
 
     AISnake() {
         Init(); // 初始化

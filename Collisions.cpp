@@ -1,5 +1,5 @@
 #include "Collisions.h"
-#include "Snake.h" // 在实现文件中包含，避免循环引用
+#include "Snake.h"
 #pragma warning(disable: 4996)	 // 禁用关于 _tcscpy 和 _stprintf 的安全警告
 
 bool CollisionManager::CheckCircleCollision(const Vector2& pos1, float radius1, const Vector2& pos2, float radius2) {
@@ -8,7 +8,6 @@ bool CollisionManager::CheckCircleCollision(const Vector2& pos1, float radius1, 
 }
 
 bool CollisionManager::CheckSnakeCollision(const Snake& snake1, const Snake& snake2) {
-    // 使用多态功能，调用实际对象的碰撞检测方法
     return snake1.CheckCollisionWith(snake2) || snake2.CheckCollisionWith(snake1);
 }
 
@@ -17,9 +16,8 @@ void CollisionManager::CheckCollisions(Snake* snake, AISnake* aiSnakes, int aiSn
     auto& gameState = GameState::Instance();
 
     if (!gameState.IsCollisionEnabled()) {
-        // 当玩家处于无敌状态时显示无敌提示
         if (gameState.isInvulnerable) {
-            // 在蛇头附近显示无敌状态图标或文字
+            // 在蛇头附近显示无敌状态
             settextcolor(RGB(255, 255, 0));  // 明黄色
             settextstyle(18, 0, _T("微软雅黑"));
 
