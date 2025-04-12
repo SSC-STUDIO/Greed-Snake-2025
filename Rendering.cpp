@@ -1,7 +1,15 @@
 #include "Rendering.h"
+#include <cmath> // For using sin function
+#include "GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
 #pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
 
+// Add extern declaration for the animation timer defined in Main.cpp
+extern float animationTimer;
+
 void DrawGameArea() {
+    // Update animation timer - increment by a small amount each frame
+    animationTimer += 0.05f;
+    
     // Draw background
     setbkcolor(RGB(30, 30, 30));
     cleardevice();
@@ -62,7 +70,65 @@ void DrawFoods(const FoodItem* foodList, int foodCount) {
     for (int i = 0; i < foodCount; ++i) {
         if (foodList[i].collisionRadius > 0) {
             Vector2 screenPos = foodList[i].position - GameState::Instance().camera.position;
-            DrawCircleWithCamera(screenPos, foodList[i].collisionRadius, foodList[i].colorValue);
+            
+            // Use the enhanced food drawing function for consistent appearance
+            if (GameConfig::ANIMATIONS_ON) {
+                DrawEnhancedFood(screenPos, foodList[i].collisionRadius, foodList[i].colorValue, i);
+            } else {
+                // Simple drawing for when animations are off
+                DrawCircleWithCamera(screenPos, foodList[i].collisionRadius, foodList[i].colorValue);
+            }
+        }
+    }
+}
+
+// Add a function for drawing food with enhanced visual effects
+void DrawEnhancedFood(const Vector2& screenPos, float radius, int color, int index) {
+    // Extract color components
+    int r = (color >> 16) & 0xFF;
+    int g = (color >> 8) & 0xFF;
+    int b = color & 0xFF;
+    
+    // Calculate animation effects
+    float pulse = sin(animationTimer + index * 0.5f) * 0.2f + 1.0f;
+    float sparklePhase = (animationTimer * 2 + index) * 3.14159f;
+    
+    // Create pulsing radius
+    float animatedRadius = radius * pulse;
+    
+    // Outer glow
+    setfillcolor(RGB(r/3, g/3, b/3));
+    setfillstyle(BS_SOLID, NULL, NULL);
+    fillcircle(screenPos.x, screenPos.y, animatedRadius * 2.0f);
+    
+    // Middle layer
+    setfillcolor(RGB(r/2, g/2, b/2));
+    fillcircle(screenPos.x, screenPos.y, animatedRadius * 1.5f);
+    
+    // Inner circle (main food)
+    setfillcolor(RGB(r, g, b));
+    fillcircle(screenPos.x, screenPos.y, animatedRadius);
+    
+    // Add highlight (small white circle in upper left)
+    setfillcolor(RGB(255, 255, 255));
+    fillcircle(screenPos.x - animatedRadius * 0.3f, 
+               screenPos.y - animatedRadius * 0.3f, 
+               animatedRadius * 0.25f);
+    
+    // Draw sparkles around the food
+    if (GameConfig::ANIMATIONS_ON) {
+        int numSparkles = 4;
+        for (int i = 0; i < numSparkles; i++) {
+            float angle = sparklePhase + i * (2 * 3.14159f / numSparkles);
+            float sparkleX = screenPos.x + cos(angle) * animatedRadius * 1.8f;
+            float sparkleY = screenPos.y + sin(angle) * animatedRadius * 1.8f;
+            
+            // Make sparkle size pulse in counterphase to the main food
+            float sparkleSize = animatedRadius * 0.2f * (1.2f - 0.2f * sin(animationTimer + index * 0.5f));
+            
+            // Draw sparkle
+            setfillcolor(RGB(255, 255, 200)); // Slightly yellow-ish white
+            fillcircle(sparkleX, sparkleY, sparkleSize);
         }
     }
 }
@@ -87,16 +153,28 @@ void DrawVisibleObjects(const FoodItem* foodList, int foodCount,
     // Only draw food items in visible area
     for (int i = 0; i < foodCount; ++i) {
         const auto& food = foodList[i];
+        if (food.collisionRadius <= 0) continue;
+        
         if (food.position.x >= screenLeft && food.position.x <= screenRight &&
             food.position.y >= screenTop && food.position.y <= screenBottom) {
+            
             Vector2 foodScreenPos = food.position - cameraPos;
-            DrawCircleWithCamera(foodScreenPos, food.collisionRadius, food.colorValue);
+            
+            // Use the enhanced food drawing function
+            if (GameConfig::ANIMATIONS_ON) {
+                DrawEnhancedFood(foodScreenPos, food.collisionRadius, food.colorValue, i);
+            } else {
+                // Simple drawing for when animations are off
+                DrawCircleWithCamera(foodScreenPos, food.collisionRadius, food.colorValue);
+            }
         }
     }
 
     // Only draw AI snakes in visible area
     for (int i = 0; i < aiSnakeCount; ++i) {
         const auto& snake = aiSnakes[i];
+        if (snake.radius <= 0) continue; // Skip snakes that have been removed
+        
         if (snake.position.x >= screenLeft && snake.position.x <= screenRight &&
             snake.position.y >= screenTop && snake.position.y <= screenBottom) {
             // Draw AI snake head
@@ -122,6 +200,18 @@ void DrawVisibleObjects(const FoodItem* foodList, int foodCount,
         playerSnake.position.y >= screenTop && playerSnake.position.y <= screenBottom) {
         // Draw head
         Vector2 headPos = playerSnake.position - cameraPos;
+        
+        // Add player snake head glow effect - only if animations are enabled
+        if (GameConfig::ANIMATIONS_ON) {
+            int r = (playerSnake.color >> 16) & 0xFF;
+            int g = (playerSnake.color >> 8) & 0xFF;
+            int b = (playerSnake.color & 0xFF);
+            
+            // Player head outer glow
+            setfillcolor(RGB(r/2, g/2, b/2));
+            fillcircle(headPos.x, headPos.y, playerSnake.radius * 1.2f);
+        }
+        
         DrawCircleWithCamera(headPos, playerSnake.radius, playerSnake.color);
         DrawSnakeEyes(headPos, playerSnake.direction, playerSnake.radius);
     }

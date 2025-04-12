@@ -78,6 +78,9 @@ public:
 
     void Update(const std::vector<FoodItem>& foodItems, float deltaTime, const Vector2& playerHeadPos);
 
+    // 添加Draw方法重写
+    void Draw(const Camera& camera) const override;
+
     // void UpdateSegments();
     bool CheckCollisionWith(const Snake& other) const override;
 };

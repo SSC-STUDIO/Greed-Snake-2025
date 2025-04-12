@@ -24,7 +24,7 @@ void SetVolume(float volume) {
 }
 
 // Apply settings
-void ApplySettings(const GameSettings& settings) {
+void ApplySettings(GameSettings& settings) {
     // Apply various settings
     SetVolume(settings.volume);
     
@@ -47,8 +47,11 @@ void ApplySettings(const GameSettings& settings) {
         break;
     }
     
-    // Set sound toggle
+    // Apply sound toggle
     GameConfig::SOUND_ON = settings.soundOn;
+    
+    // Apply animations toggle
+    GameConfig::ANIMATIONS_ON = settings.animationsOn;
     
     // Set snake speed
     switch (settings.snakeSpeed) {
@@ -173,17 +176,46 @@ void ShowSettings(int windowWidth, int windowHeight) {
         outtextxy(btnX + (buttonWidth - 10) / 2 - textWidth / 2, speedY + 8, speedLabels[i]);
     }
     
-    // Return button
+    // Animation toggle
+    int animationY = speedY + 100;
+    outtextxy(sliderX, animationY - 40, _T("Animations"));
+    
+    const TCHAR* animationLabels[] = { _T("Off"), _T("On") };
+    
+    for (int i = 0; i < 2; i++) {
+        int btnX = sliderX + i * soundBtnWidth;
+        
+        if ((i == 0 && !currentSettings.animationsOn) || (i == 1 && currentSettings.animationsOn)) {
+            setfillcolor(RGB(0, 150, 255));
+        } else {
+            setfillcolor(RGB(80, 80, 80));
+        }
+        
+        solidroundrect(btnX, animationY, btnX + soundBtnWidth - 10, animationY + buttonHeight, 5, 5);
+        
+        int textWidth = textwidth(animationLabels[i]);
+        outtextxy(btnX + (soundBtnWidth - 10) / 2 - textWidth / 2, animationY + 8, animationLabels[i]);
+    }
+    
+    // Return button area
     int returnY = windowHeight - 100;
-    int returnWidth = 200;
-    int returnHeight = 50;
-    int returnX = windowWidth / 2 - returnWidth / 2;
+    int settingButtonWidth = 150;
+    int settingButtonHeight = 50;
+    int applyX = windowWidth / 2 - settingButtonWidth - 20;
+    int cancelX = windowWidth / 2 + 20;
     
-    setfillcolor(RGB(0, 150, 255));
-    solidroundrect(returnX, returnY, returnX + returnWidth, returnY + returnHeight, 10, 10);
-    
+    // Apply button
+    setfillcolor(RGB(0, 150, 80));
+    solidroundrect(applyX, returnY, applyX + settingButtonWidth, returnY + settingButtonHeight, 10, 10);
+
     settextstyle(28, 0, _T("Arial"));
-    outtextxy(returnX + returnWidth / 2 - textwidth(_T("Apply")) / 2, returnY + 10, _T("Apply"));
+    outtextxy(applyX + settingButtonWidth / 2 - textwidth(_T("Apply")) / 2, returnY + 10, _T("Apply"));
+
+    // Cancel button
+    setfillcolor(RGB(150, 50, 50));
+    solidroundrect(cancelX, returnY, cancelX + settingButtonWidth, returnY + settingButtonHeight, 10, 10);
+
+    outtextxy(cancelX + settingButtonWidth / 2 - textwidth(_T("Cancel")) / 2, returnY + 10, _T("Cancel"));
     
     FlushBatchDraw();
     
@@ -202,6 +234,10 @@ void ShowSettings(int windowWidth, int windowHeight) {
                 
                 // Apply volume in real-time
                 SetVolume(newVolume);
+                
+                // Clear the volume area first
+                setfillcolor(RGB(30, 30, 30));
+                solidrectangle(sliderX-handleRadius, sliderY-handleRadius, sliderX+sliderWidth+handleRadius, sliderY+sliderHeight+handleRadius);
                 
                 // Redraw volume slider
                 setfillcolor(RGB(100, 100, 100));
@@ -292,11 +328,44 @@ void ShowSettings(int windowWidth, int windowHeight) {
                     }
                 }
             }
-            // Check return button
-            else if (msg.x >= returnX && msg.x <= returnX + returnWidth &&
-                     msg.y >= returnY && msg.y <= returnY + returnHeight) {
+            // Check animation toggle buttons
+            else if (msg.y >= animationY && msg.y <= animationY + buttonHeight) {
+                for (int i = 0; i < 2; i++) {
+                    int btnX = sliderX + i * soundBtnWidth;
+                    if (msg.x >= btnX && msg.x <= btnX + soundBtnWidth - 10) {
+                        currentSettings.animationsOn = (i == 1);
+                        
+                        // Redraw animation buttons
+                        for (int j = 0; j < 2; j++) {
+                            int btnX2 = sliderX + j * soundBtnWidth;
+                            if ((j == 0 && !currentSettings.animationsOn) || (j == 1 && currentSettings.animationsOn)) {
+                                setfillcolor(RGB(0, 150, 255));
+                            } else {
+                                setfillcolor(RGB(80, 80, 80));
+                            }
+                            
+                            solidroundrect(btnX2, animationY, btnX2 + soundBtnWidth - 10, animationY + buttonHeight, 5, 5);
+                            
+                            int textWidth = textwidth(animationLabels[j]);
+                            outtextxy(btnX2 + (soundBtnWidth - 10) / 2 - textWidth / 2, animationY + 8, animationLabels[j]);
+                        }
+                        
+                        FlushBatchDraw();
+                        break;
+                    }
+                }
+            }
+            // Check apply button
+            else if (msg.x >= applyX && msg.x <= applyX + settingButtonWidth &&
+                     msg.y >= returnY && msg.y <= returnY + settingButtonHeight) {
                 // Apply settings
                 ApplySettings(currentSettings);
+                settingsOpen = false;
+            }
+            // Check cancel button
+            else if (msg.x >= cancelX && msg.x <= cancelX + settingButtonWidth &&
+                     msg.y >= returnY && msg.y <= returnY + settingButtonHeight) {
+                // Don't apply settings
                 settingsOpen = false;
             }
         }

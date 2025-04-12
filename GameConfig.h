@@ -23,6 +23,7 @@ namespace GameConfig {
     constexpr float PLAYER_NORMAL_SPEED = 250.0f; // Snake normal speed
     constexpr float PLAYER_FAST_SPEED = 320.0f; // Snake fast speed
     extern bool SOUND_ON; // Sound toggle (using extern declaration to avoid multiple definitions)
+    extern bool ANIMATIONS_ON; // Animations toggle
     
     // Modify game area boundaries to accommodate new window size
     constexpr int PLAY_AREA_LEFT = -WINDOW_WIDTH * 10;        // Expand 10 window widths to the left

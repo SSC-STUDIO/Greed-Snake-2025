@@ -21,3 +21,4 @@ void DebugDrawText(const std::wstring& text, int x, int y, int color);
 void DrawSnakeEyes(const Vector2& position, const Vector2& direction, float radius);
 bool IsCircleInScreen(const Vector2& center, float r);
 void DrawUI();
+void DrawEnhancedFood(const Vector2& screenPos, float radius, int color, int index);

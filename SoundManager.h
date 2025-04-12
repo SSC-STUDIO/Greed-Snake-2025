@@ -9,3 +9,6 @@ void StopBackgroundMusic();
 
 // Play start animation music and animation
 void PlayStartAnimation(); 
+
+// Cleanup audio resources before exiting
+void CleanupAudioResources(); 

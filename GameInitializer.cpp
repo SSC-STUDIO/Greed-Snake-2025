@@ -159,7 +159,8 @@ void UpdateAISnakes(float deltaTime) {
                       deltaTime, 
                       snake[0].position);
         
-        float snakeSpeed = GameState::Instance().currentPlayerSpeed * 0.75f; // Set to 75% of player snake speed
+        // 设置AI蛇速度为玩家速度的1/4，确保玩家速度始终是AI蛇的4倍
+        float snakeSpeed = GameState::Instance().currentPlayerSpeed * 0.25f;
         aiSnake.position = aiSnake.position + aiSnake.direction * snakeSpeed * deltaTime;
         
         aiSnake.RecordPos();

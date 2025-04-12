@@ -87,9 +87,31 @@ void PlayerSnake::Update(float deltaTime)
 
 void PlayerSnake::Draw(const Camera& camera) const
 {
-    // Draw body segments
-    for (const auto& segment : segments) {
-        segment.Draw(camera);
+    // Get the base color values for the snake body
+    int baseR = (color >> 16) & 0xFF;
+    int baseG = (color >> 8) & 0xFF; 
+    int baseB = color & 0xFF;
+
+    // Draw body segments with gradient effect
+    for (size_t i = 0; i < segments.size(); i++) {
+        const auto& segment = segments[i];
+        Vector2 windowPos = segment.position - camera.position;
+        
+        // Create color gradient - color gradually changes from head to tail
+        float ratio = static_cast<float>(i) / segments.size(); // Between 0 and 1
+        int segR = baseR - static_cast<int>(ratio * baseR * 0.3f);
+        int segG = baseG - static_cast<int>(ratio * baseG * 0.3f);
+        int segB = baseB - static_cast<int>(ratio * baseB * 0.3f);
+        int segColor = RGB(segR, segG, segB);
+        
+        // Snake body size variation, tail is slightly smaller, increases fluidity
+        float sizeRatio = 1.0f - ratio * 0.3f;
+        float segRadius = segment.radius * sizeRatio;
+        
+        // Draw snake body segment
+        setfillcolor(segColor);
+        setlinecolor(segColor);
+        fillcircle(windowPos.x, windowPos.y, segRadius);
     }
 
     // Draw head
@@ -216,6 +238,39 @@ void AISnake::Update(const std::vector<FoodItem>& foodItems, float deltaTime, co
         }
         segments[i].Update(deltaTime);
     }
+}
+
+void AISnake::Draw(const Camera& camera) const
+{
+    // Get the base color values for the snake body
+    int baseR = (color >> 16) & 0xFF;
+    int baseG = (color >> 8) & 0xFF; 
+    int baseB = color & 0xFF;
+
+    // Draw body segments with gradient effect
+    for (size_t i = 0; i < segments.size(); i++) {
+        const auto& segment = segments[i];
+        Vector2 windowPos = segment.position - camera.position;
+        
+        // Create color gradient - color gradually changes from head to tail
+        float ratio = static_cast<float>(i) / segments.size(); // Between 0 and 1
+        int segR = baseR - static_cast<int>(ratio * baseR * 0.3f);
+        int segG = baseG - static_cast<int>(ratio * baseG * 0.3f);
+        int segB = baseB - static_cast<int>(ratio * baseB * 0.3f);
+        int segColor = RGB(segR, segG, segB);
+        
+        // Draw snake body segment
+        setfillcolor(segColor);
+        setlinecolor(segColor);
+        fillcircle(windowPos.x, windowPos.y, segment.radius);
+    }
+
+    // Draw head
+    Snake::Draw(camera);
+
+    // Draw eyes
+    Vector2 windowPos = position - camera.position;
+    DrawSnakeEyes(windowPos, direction, radius);
 }
 
 bool PlayerSnake::CheckCollisionWith(const Snake& other) const {

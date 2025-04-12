@@ -19,3 +19,4 @@ public:
     static void CheckCollisions(Snake* snake, AISnake* aiSnakes, int aiSnakeCount, 
                                FoodItem* foodList, int foodCount);
 };
+void DrawEatAISnakeEffect(const Vector2& position, int color, float radius);

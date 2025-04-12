@@ -23,11 +23,32 @@ void ShowAbout() {
     outtextxy(50, 310, _T("- Hold left mouse button to accelerate"));
     outtextxy(50, 340, _T("- ESC to end game"));
 
-    settextcolor(RGB(150, 150, 150));
-    outtextxy(50, GameConfig::WINDOW_HEIGHT - 100, _T("Press any key to return to menu..."));
+    // Add a Back button instead of waiting for any key
+    int aboutButtonWidth = 150;
+    int aboutButtonHeight = 50;
+    int backButtonX = GameConfig::WINDOW_WIDTH / 2 - aboutButtonWidth / 2;
+    int backButtonY = GameConfig::WINDOW_HEIGHT - 100;
+    
+    setfillcolor(RGB(80, 80, 150));
+    solidroundrect(backButtonX, backButtonY, backButtonX + aboutButtonWidth, backButtonY + aboutButtonHeight, 10, 10);
+    
+    settextstyle(28, 0, _T("Arial"));
+    settextcolor(WHITE);
+    outtextxy(backButtonX + aboutButtonWidth / 2 - textwidth(_T("Back")) / 2, backButtonY + 10, _T("Back"));
 
     FlushBatchDraw();
-    _getch();  // Wait for any key
+    
+    // Wait for button click instead of any key
+    bool aboutOpen = true;
+    while (aboutOpen) {
+        ExMessage msg = getmessage(EX_MOUSE);
+        if (msg.message == WM_LBUTTONDOWN) {
+            if (msg.x >= backButtonX && msg.x <= backButtonX + aboutButtonWidth &&
+                msg.y >= backButtonY && msg.y <= backButtonY + aboutButtonHeight) {
+                aboutOpen = false;
+            }
+        }
+    }
 }
 
 // Display game main menu

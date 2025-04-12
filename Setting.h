@@ -12,6 +12,7 @@ struct GameSettings {
     int difficulty;       // Difficulty (0-Easy, 1-Normal, 2-Hard)
     bool soundOn;         // Sound toggle
     int snakeSpeed;       // Snake speed (0-Slow, 1-Normal, 2-Fast)
+    bool animationsOn;    // Animation toggle
 };
 
 // Set volume (0.0-1.0)

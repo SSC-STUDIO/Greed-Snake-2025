@@ -10,6 +10,10 @@
 #include <algorithm>
 #include <mutex>
 #include <ctime>
+#include <condition_variable>
+#include <iostream>
+#include <chrono>
+#include <mmsystem.h>
 #include "GameConfig.h"
 #include "Vector2.h"
 #include "Snake.h"
@@ -21,11 +25,12 @@
 #include "Setting.h"
 #include "StartInterface.h"
 #include "Button.h"
-#include "InputHandler.h"       // Added
-#include "GameInitializer.h"    // Added
-#include "SoundManager.h"       // Added
-#include "UI.h"                 // Added UI.h header
+#include "InputHandler.h"       
+#include "GameInitializer.h"    
+#include "SoundManager.h"       
+#include "UI.h"                 
 #pragma comment(lib, "winmm.lib") // Required for multimedia functions
+#pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
 
 // Screen dimensions
 const int windowWidth = GameConfig::WINDOW_WIDTH;
@@ -43,6 +48,12 @@ Vector2 playerDirection(0, 1);
 
 // Game timing
 float deltaTime = GameState::Instance().deltaTime;
+
+// Animation timer for visual effects
+float animationTimer = 0.0f;
+
+// External function declaration for the growth animation update
+extern void UpdateGrowthAnimation(float deltaTime);
 
 // Arrays and collections
 FoodItem foodList[GameConfig::MAX_FOOD_COUNT];
@@ -137,10 +148,18 @@ public:
     }
 };
 
+// Remove mutex and condition variable
+bool graphicsInitialized = false;
+
+// Modify the Draw function to ensure thread safety when initializing graphics
 void Draw() {
-    while (GameState::Instance().isGameRunning) {
-    BeginBatchDraw();
     
+    // Set graphics as initialized
+    graphicsInitialized = true;
+    
+    // The rest of the Draw function...
+    BeginBatchDraw();
+    while (GameState::Instance().isGameRunning) {
         // Update camera
         UpdateCamera();
 
@@ -170,6 +189,9 @@ void Draw() {
                           static_cast<int>(aiSnakeList.size()), 
                           playerSnakeObj);
 
+        // Update growth animation effect
+        UpdateGrowthAnimation(GameState::Instance().deltaTime);
+                          
         // Draw UI elements
         DrawUI();
 
@@ -177,16 +199,22 @@ void Draw() {
         
         // Check collisions
         CheckCollisions();
-
-    EndBatchDraw();
-    
+        
+        // Update animation timer
+        animationTimer += GameState::Instance().deltaTime;
+        if (animationTimer > 1000.0f) {
+            animationTimer = 0.0f;
+        }
+        
+        FlushBatchDraw();
         // Add frame rate control
         Sleep(1000 / 60);  // Limit to approximately 60 FPS
     }
+    EndBatchDraw();
 }
 
 int main() {
-    // Initialize game window
+    // Initialize graphics first in the main thread
     initgraph(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
 
     // Play start animation
@@ -194,33 +222,32 @@ int main() {
 
     LoadButton(); // Load buttons
 
-    // Load and scale background image
-    IMAGE backgroundImage;
-    loadimage(&backgroundImage, _T(".\\Resource\\Greed-Snake-BG.png")); // Load background image
-    // Scale background to fit window
-    IMAGE scaledBG;
-    scaledBG.Resize(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
-    StretchBlt(GetImageHDC(&scaledBG), 0, 0, GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT,
-        GetImageHDC(&backgroundImage), 0, 0, backgroundImage.getwidth(), backgroundImage.getheight(), SRCCOPY);
-
-    putimage(0, 0, &scaledBG);
-
     // Main program loop - keep running until exit is selected
     bool quitProgram = false;
     
     while (!quitProgram) {
+        // Load and scale background image before each menu display
+        IMAGE backgroundImage;
+        loadimage(&backgroundImage, _T(".\\Resource\\Greed-Snake-BG.png")); // Load background image
+
+        // Scale background to fit window
+        IMAGE scaledBG;
+        scaledBG.Resize(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
+        StretchBlt(GetImageHDC(&scaledBG), 0, 0, GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT,
+            GetImageHDC(&backgroundImage), 0, 0, backgroundImage.getwidth(), backgroundImage.getheight(), SRCCOPY);
+
+        // Apply the background image
+        BeginBatchDraw();
+        putimage(0, 0, &scaledBG);
+        EndBatchDraw();
+
         // Menu loop
         bool showMenu = true;
         bool startGame = false;
         
         while (showMenu && !quitProgram) {
-            // Draw background at the start of each menu loop iteration
-            BeginBatchDraw();
-            
             // Use ShowGameMenu function from UI.h to display menu
             int menuChoice = ShowGameMenu();
-            
-            EndBatchDraw();
             
             switch (menuChoice) {
                 case StartGame:
@@ -231,10 +258,14 @@ int main() {
                     
                 case Setting:
                     ShowSettings(windowWidth, windowHeight);
+                    // Redraw background after settings
+                    putimage(0, 0, &scaledBG);
                     break;
                     
                 case About:
                     ShowAbout();
+                    // Redraw background after about screen
+                    putimage(0, 0, &scaledBG);
                     break;
                     
                 case Exit:
@@ -340,8 +371,44 @@ int main() {
         }
     }
 
+    // Clean up audio resources before exiting
+    CleanupAudioResources();
     closegraph(); // Close graphics window
     return 0; // Exit program
+}
+
+// Game Update function
+void GameUpdate(std::chrono::steady_clock::time_point& lastTime, float& accumulator, float& totalElapsedTime) {
+    // Calculate delta time
+    auto currentTime = std::chrono::steady_clock::now();
+    float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+    lastTime = currentTime;
+
+    // Prevent large time steps
+    if (deltaTime > 0.25f) {
+        deltaTime = 0.25f;
+    }
+
+    // Update accumulator
+    accumulator += deltaTime;
+
+    // Advance animation timer
+    animationTimer += deltaTime;
+    if (animationTimer > 1000.0f) {
+        animationTimer = 0.0f;
+    }
+
+    // ... existing code ...
+}
+
+void GameRender(PlayerSnake& snake, AISnake aiSnakes[], FoodItem foodItems[], const int foodCount) {
+    // ... existing code ...
+    
+    // Update growth animation if active
+    UpdateGrowthAnimation(0.016f);
+    
+    // Continue with existing rendering
+    // ... existing code ...
 }
 
 
