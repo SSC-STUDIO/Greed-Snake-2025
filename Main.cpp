@@ -17,7 +17,6 @@
 #include "GameState.h"
 #include "Rendering.h"
 #include "Collisions.h"
-#include "SpatialGrid.h"
 #include "Camera.h"
 #include "Food.h"
 #include "Setting.h"

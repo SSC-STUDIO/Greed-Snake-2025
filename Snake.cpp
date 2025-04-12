@@ -199,29 +199,22 @@ void AISnake::Update(const std::vector<FoodItem>& foodItems, float deltaTime, co
         direction = (direction + borderAvoidDir * 3.0f).GetNormalize();
     }
     
-    // 使用与Snake::Update相同的逻辑更新时间和记录位置
-    Snake::Update(deltaTime);
+    // 修改速度计算，将AI蛇的速度设置为玩家速度的0.25倍
+    Vector2 velocity = direction.GetNormalize() * GameState::Instance().currentPlayerSpeed * 0.25f;
+    position = position + velocity * deltaTime;
     
-    // 添加这一行来更新蛇的身体段
-    UpdateSegments();
-}
+    // 使用基类的Update来处理位置记录
+    Snake::Update(deltaTime);
 
-void AISnake::UpdateSegments() {
-    // 更新所有身体段
+    // 更新身体段，使用与PlayerSnake相同的逻辑
     for (size_t i = 0; i < segments.size(); i++) {
         if (i == 0) {
-            // 第一段跟随头部
-            Vector2 targetPos = position - direction * GameConfig::SNAKE_SEGMENT_SPACING;
-            Vector2 moveDir = (targetPos - segments[i].position).GetNormalize();
-            segments[i].position = segments[i].position + moveDir * speedMultiplier * GameState::Instance().currentPlayerSpeed * GameState::Instance().deltaTime;
-            segments[i].direction = moveDir;
-        } else {
-            // 其他段跟随前一段
-            Vector2 targetPos = segments[i-1].position - segments[i-1].direction * GameConfig::SNAKE_SEGMENT_SPACING;
-            Vector2 moveDir = (targetPos - segments[i].position).GetNormalize();
-            segments[i].position = segments[i].position + moveDir * speedMultiplier * GameState::Instance().currentPlayerSpeed * GameState::Instance().deltaTime;
-            segments[i].direction = moveDir;
+            UpdateBody(*this, segments[i]);
         }
+        else {
+            UpdateBody(segments[i - 1], segments[i]);
+        }
+        segments[i].Update(deltaTime);
     }
 }
 

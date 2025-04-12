@@ -78,6 +78,6 @@ public:
 
     void Update(const std::vector<FoodItem>& foodItems, float deltaTime, const Vector2& playerHeadPos);
 
-    void UpdateSegments();
+    // void UpdateSegments();
     bool CheckCollisionWith(const Snake& other) const override;
 };

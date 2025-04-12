@@ -135,7 +135,6 @@
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Rendering.h" />
     <ClInclude Include="Snake.h" />
-    <ClInclude Include="SpatialGrid.h" />
     <ClInclude Include="StartInterface.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>
