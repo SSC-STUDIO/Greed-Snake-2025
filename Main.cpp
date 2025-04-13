@@ -14,21 +14,19 @@
 #include <iostream>
 #include <chrono>
 #include <mmsystem.h>
-#include "GameConfig.h"
-#include "Vector2.h"
-#include "Snake.h"
-#include "GameState.h"
-#include "Rendering.h"
-#include "Collisions.h"
-#include "Camera.h"
-#include "Food.h"
-#include "Setting.h"
-#include "StartInterface.h"
-#include "Button.h"
-#include "InputHandler.h"       
-#include "GameInitializer.h"    
-#include "SoundManager.h"       
-#include "UI.h"                 
+#include "Core/GameConfig.h"
+#include "Core/Vector2.h"
+#include "Gameplay/Snake.h"
+#include "Gameplay/GameState.h"
+#include "Utils/Rendering.h"
+#include "Gameplay/Collisions.h"
+#include "Core/Camera.h"
+#include "Gameplay/Food.h"
+#include "UI/Setting.h"
+#include "UI/Button.h"
+#include "Utils/InputHandler.h"       
+#include "Gameplay/GameInitializer.h"           
+#include "UI/UI.h"                 
 #pragma comment(lib, "winmm.lib") // Required for multimedia functions
 #pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
 

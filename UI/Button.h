@@ -1,5 +1,5 @@
 #pragma once
-#include "Snake.h"
+#include "../Gameplay/Snake.h"
 #include <graphics.h>
 
 enum class DrawMod

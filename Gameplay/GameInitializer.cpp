@@ -1,5 +1,5 @@
 #include "GameInitializer.h"
-#include "GameConfig.h"
+#include "..\Core\GameConfig.h"
 #include "Collisions.h"
 #include <algorithm>
 
@@ -159,7 +159,6 @@ void UpdateAISnakes(float deltaTime) {
                       deltaTime, 
                       snake[0].position);
         
-        // 设置AI蛇速度为玩家速度的1/4，确保玩家速度始终是AI蛇的4倍
         float snakeSpeed = GameState::Instance().currentPlayerSpeed * 0.25f;
         aiSnake.position = aiSnake.position + aiSnake.direction * snakeSpeed * deltaTime;
         

@@ -1,9 +1,9 @@
 #include "Setting.h"
-#include "GameState.h"
+#include "..\Gameplay\GameState.h"
 #include <mmsystem.h>
 #include <tchar.h>
 #include "Button.h"
-#include "GameConfig.h"
+#include "..\Core\GameConfig.h"
 #include <windows.h>
 #include <graphics.h>
 #pragma comment(lib, "winmm.lib")

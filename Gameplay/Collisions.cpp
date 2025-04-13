@@ -1,7 +1,7 @@
 #include "Collisions.h"
 #include "Snake.h"
 #include "Food.h"
-#include "GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
+#include "..\Core\GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
 #include <cmath> // For sin/cos in particle effects
 #pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
 
@@ -22,6 +22,9 @@ static GrowthAnimation playerGrowthAnim;
 
 // Add helper function for AI snake eating animation effects
 void DrawEatAISnakeEffect(const Vector2& position, int color, float radius) {
+    // Play explosion sound
+    PlaySound(_T(".\\Resource\\SoundEffects\\Explosion.wav"), NULL, SND_FILENAME | SND_ASYNC);
+    
     // Get screen position
     Vector2 screenPos = position - GameState::Instance().camera.position;
     
@@ -57,11 +60,14 @@ void DrawEatAISnakeEffect(const Vector2& position, int color, float radius) {
     
     // Draw inner bright flash
     setfillcolor(RGB(255, 255, 255));
-    fillcircle(screenPos.x, screenPos.y, radius * 1.2f);
+    solidcircle(screenPos.x, screenPos.y, radius * 0.8f);
 }
 
 // Add helper function for AI snake hitting player animation effects
 void DrawAISnakeHitPlayerEffect(const Vector2& position, int color, float radius) {
+    // Play impact sound
+    PlaySound(_T(".\\Resource\\SoundEffects\\Impact.wav"), NULL, SND_FILENAME | SND_ASYNC);
+    
     // Get screen position
     Vector2 screenPos = position - GameState::Instance().camera.position;
     

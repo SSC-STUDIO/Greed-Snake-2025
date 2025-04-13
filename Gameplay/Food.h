@@ -1,6 +1,6 @@
 #pragma once
-#include "Vector2.h"    
-#include "GameConfig.h" 
+#include "../Core/Vector2.h"    
+#include "../Core/GameConfig.h" 
 #include "GameState.h" 
 #include <graphics.h>
 

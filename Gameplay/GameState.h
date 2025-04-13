@@ -1,7 +1,7 @@
 #pragma once
-#include "Vector2.h"
-#include "GameConfig.h"
-#include "Camera.h"
+#include "../Core/Vector2.h"
+#include "../Core/GameConfig.h"
+#include "../Core/Camera.h"
 #include "Snake.h"
 #include <mutex> // Mutex header
 #include <easyx.h>

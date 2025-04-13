@@ -127,38 +127,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Button.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Collisions.h" />
-    <ClInclude Include="Food.h" />
-    <ClInclude Include="GameConfig.h" />
-    <ClInclude Include="GameInitializer.h" />
-    <ClInclude Include="GameState.h" />
-    <ClInclude Include="InputHandler.h" />
-    <ClInclude Include="Rendering.h" />
-    <ClInclude Include="Setting.h" />
-    <ClInclude Include="Snake.h" />
-    <ClInclude Include="SoundManager.h" />
-    <ClInclude Include="StartInterface.h" />
-    <ClInclude Include="UI.h" />
-    <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Core\Button.h" />
+    <ClInclude Include="Core\Camera.h" />
+    <ClInclude Include="Gameplay\Collisions.h" />
+    <ClInclude Include="Gameplay\Food.h" />
+    <ClInclude Include="Core\GameConfig.h" />
+    <ClInclude Include="Gameplay\GameInitializer.h" />
+    <ClInclude Include="Gameplay\GameState.h" />
+    <ClInclude Include="Utils\InputHandler.h" />
+    <ClInclude Include="Utils\Rendering.h" />
+    <ClInclude Include="UI\Setting.h" />
+    <ClInclude Include="Gameplay\Snake.h" />
+    <ClInclude Include="UI\UI.h" />
+    <ClInclude Include="Core\Vector2.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Button.cpp" />
-    <ClCompile Include="Collisions.cpp" />
-    <ClCompile Include="Food.cpp" />
-    <ClCompile Include="GameConfig.cpp" />
-    <ClCompile Include="GameInitializer.cpp" />
-    <ClCompile Include="GameState.cpp" />
-    <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="UI\Button.cpp" />
+    <ClCompile Include="Gameplay\Collisions.cpp" />
+    <ClCompile Include="Gameplay\Food.cpp" />
+    <ClCompile Include="Core\GameConfig.cpp" />
+    <ClCompile Include="Gameplay\GameInitializer.cpp" />
+    <ClCompile Include="Gameplay\GameState.cpp" />
+    <ClCompile Include="Utils\InputHandler.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Rendering.cpp" />
-    <ClCompile Include="Setting.cpp" />
-    <ClCompile Include="Snake.cpp" />
-    <ClCompile Include="SoundManager.cpp" />
-    <ClCompile Include="StartInterface.cpp" />
-    <ClCompile Include="UI.cpp" />
-    <ClCompile Include="Vector2.cpp" />
+    <ClCompile Include="Utils\Rendering.cpp" />
+    <ClCompile Include="UI\Setting.cpp" />
+    <ClCompile Include="Gameplay\Snake.cpp" />
+    <ClCompile Include="UI\UI.cpp" />
+    <ClCompile Include="Core\Vector2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resource\About.png" />
@@ -168,9 +164,12 @@
     <Image Include="Resource\Setting.png" />
   </ItemGroup>
   <ItemGroup>
-    <Media Include="Resource\Greed-Snake-Start-Animation.MP3" />
-    <Media Include="Resource\Greed-Snake-Start-Animation.mp4" />
-    <Media Include="Resource\Greed-Snake.mp3" />
+    <Media Include="Resource\SoundEffects\Greed-Snake.mp3" />
+    <Media Include="Resource\SoundEffects\Greed-Snake-Start-Animation.MP3" />
+    <Media Include="Resource\SoundEffects\Button-Click.wav" />
+    <Media Include="Resource\SoundEffects\Game-Over.wav" />
+    <Media Include="Resource\SoundEffects\Impact.wav" />
+    <Media Include="Resource\SoundEffects\Explosion.wav" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Geed-Snake.rc" />

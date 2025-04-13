@@ -1,5 +1,5 @@
 #include "Button.h"
-#include "Vector2.h"
+#include "..\Core\Vector2.h"
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
 

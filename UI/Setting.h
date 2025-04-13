@@ -1,6 +1,6 @@
 #pragma once
-#include "GameConfig.h"
-#include "GameState.h"
+#include "../Core/GameConfig.h"
+#include "../Gameplay/GameState.h"
 #include <tchar.h>
 #include <windows.h>
 #pragma comment(lib, "winmm.lib") 

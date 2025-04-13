@@ -1,7 +1,7 @@
 #pragma once
-#include "Vector2.h"
-#include "GameState.h"
-#include "Snake.h"
+#include "../Core/Vector2.h"
+#include "../Gameplay/GameState.h"
+#include "../Gameplay/Snake.h"
 #include <graphics.h>
 
 // Handle keyboard and mouse input during gameplay

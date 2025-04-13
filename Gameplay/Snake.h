@@ -1,9 +1,9 @@
 #pragma once
-#include "GameConfig.h"
+#include "../Core/GameConfig.h"
 #include "GameState.h"
-#include "Vector2.h"
-#include "Camera.h"
-#include "Rendering.h"
+#include "../Core/Vector2.h"
+#include "../Core/Camera.h"
+#include "../Utils/Rendering.h"
 #include "Food.h"
 #include <queue>
 

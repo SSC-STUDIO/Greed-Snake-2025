@@ -1,5 +1,5 @@
 #include "InputHandler.h"
-#include "GameConfig.h"
+#include "..\Core\GameConfig.h"
 #include <windows.h>
 
 // Global declaration (imported from Main.cpp)

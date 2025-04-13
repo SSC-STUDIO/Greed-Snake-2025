@@ -90,6 +90,9 @@ void GameState::UpdateGameTime(float dt)
 void GameState::ShowDeathMessage() {
     cleardevice();
     
+    // Play game over sound
+    PlaySound(_T(".\\Resource\\SoundEffects\\Game-Over.wav"), NULL, SND_FILENAME | SND_ASYNC);
+    
     setfillcolor(RGB(0, 0, 0));
     solidrectangle(0, 0, GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
     
@@ -191,7 +194,7 @@ void GameState::ShowDeathMessage() {
 
 void GameState::ShowPauseMenu() {
     // Draw semi-transparent overlay
-    setfillcolor(RGB(0, 0, 0, 180)); // Semi-transparent black
+    setfillcolor(RGB(0, 0, 0)); // Semi-transparent black
     solidrectangle(0, 0, GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
     
     // Draw pause menu box

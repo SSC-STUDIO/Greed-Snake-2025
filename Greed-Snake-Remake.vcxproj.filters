@@ -13,99 +13,99 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{5A3B6AB7-F800-4c08-8B7A-83BB121AAD02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{3A4C7AB8-F800-4c08-8B7A-83BB121AAD03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gameplay">
+      <UniqueIdentifier>{2A5D8AB9-F800-4c08-8B7A-83BB121AAD04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{1A6E9AC0-F800-4c08-8B7A-83BB121AAD05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Button.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Core\Button.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Core\Camera.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Collisions.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Gameplay\Collisions.h">
+      <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="Food.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Gameplay\Food.h">
+      <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="GameConfig.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Core\GameConfig.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="GameInitializer.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Gameplay\GameInitializer.h">
+      <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="GameState.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Gameplay\GameState.h">
+      <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="InputHandler.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Utils\InputHandler.h">
+      <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Rendering.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Utils\Rendering.h">
+      <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Setting.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="UI\Setting.h">
+      <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="Snake.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Gameplay\Snake.h">
+      <Filter>Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="SoundManager.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="UI\UI.h">
+      <Filter>UI</Filter>
     </ClInclude>
-    <ClInclude Include="StartInterface.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="UI.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Vector2.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Core\Vector2.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Button.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="UI\Button.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="Collisions.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Gameplay\Collisions.cpp">
+      <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="Food.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Gameplay\Food.cpp">
+      <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="GameConfig.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Core\GameConfig.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="GameInitializer.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Gameplay\GameInitializer.cpp">
+      <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="GameState.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Gameplay\GameState.cpp">
+      <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="InputHandler.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Utils\InputHandler.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Rendering.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Utils\Rendering.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Setting.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="UI\Setting.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="Snake.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Gameplay\Snake.cpp">
+      <Filter>Gameplay</Filter>
     </ClCompile>
-    <ClCompile Include="SoundManager.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="UI\UI.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="StartInterface.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="UI.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Vector2.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="Core\Vector2.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -126,13 +126,22 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Media Include="Resource\Greed-Snake.mp3">
+    <Media Include="Resource\SoundEffects\Greed-Snake.mp3">
       <Filter>资源文件</Filter>
     </Media>
-    <Media Include="Resource\Greed-Snake-Start-Animation.MP3">
+    <Media Include="Resource\SoundEffects\Greed-Snake-Start-Animation.MP3">
       <Filter>资源文件</Filter>
     </Media>
-    <Media Include="Resource\Greed-Snake-Start-Animation.mp4">
+    <Media Include="Resource\SoundEffects\Button-Click.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="Resource\SoundEffects\Game-Over.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="Resource\SoundEffects\Impact.wav">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="Resource\SoundEffects\Explosion.wav">
       <Filter>资源文件</Filter>
     </Media>
   </ItemGroup>

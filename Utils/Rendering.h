@@ -1,10 +1,10 @@
 #pragma once
-#include "Vector2.h"
-#include "GameConfig.h"
-#include "GameState.h"
-#include "Camera.h"
-#include "Food.h"
-#include "Snake.h"
+#include "../Core/Vector2.h"
+#include "../Core/GameConfig.h"
+#include "../Gameplay/GameState.h"
+#include "../Core/Camera.h"
+#include "../Gameplay/Food.h"
+#include "../Gameplay/Snake.h"
 
 class Snake;
 class PlayerSnake;

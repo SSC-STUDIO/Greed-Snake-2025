@@ -1,6 +1,6 @@
 #include "Rendering.h"
 #include <cmath> // For using sin function
-#include "GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
+#include "..\Core\GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
 #pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
 
 // Add extern declaration for the animation timer defined in Main.cpp
