@@ -1,8 +1,8 @@
 #pragma once
 #include "../Core/Vector2.h"
-#include "../Core/GameConfig.h"
+#include "../Gameplay/GameConfig.h"
 #include "../Core/Camera.h"
-#include "Snake.h"
+#include "../Gameplay/Snake.h"
 #include <mutex> // Mutex header
 #include <easyx.h>
 #include <conio.h> // Support for _kbhit() and _getch()
@@ -165,7 +165,7 @@ public:
     // Add mutex for thread synchronization
     std::mutex stateMutex;
 
-    unsigned int worldSeed = 0; // 世界生成种子
+    unsigned int worldSeed = 0; 
 
 private:
     GameState() = default; // Private constructor

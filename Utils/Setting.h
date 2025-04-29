@@ -1,7 +1,9 @@
 #pragma once
-#include "../Core/GameConfig.h"
-#include "../Gameplay/GameState.h"
+#include "../Gameplay/GameConfig.h"
+#include "../Core/GameState.h"
+#include <mmsystem.h>
 #include <tchar.h>
+#include "../Core/Vector2.h"
 #include <windows.h>
 #pragma comment(lib, "winmm.lib") 
 #pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf functions

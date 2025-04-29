@@ -1,5 +1,5 @@
 #include "Snake.h"
-#include "Collisions.h"
+#include "../Core/Collisions.h"
 
 Vector2 SnakeSegment::GetVelocity() const
 {
@@ -122,7 +122,7 @@ void PlayerSnake::Draw(const Camera& camera) const
     DrawSnakeEyes(windowPos, direction, radius);
 }
 
-void AISnake::Init()
+void AISnake::Initialize()
 {
     // Reset death state
     isDying = false;

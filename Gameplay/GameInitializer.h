@@ -1,7 +1,7 @@
 #pragma once
-#include "..\Core\Vector2.h"
-#include "..\Core\GameConfig.h"
-#include "..\Gameplay\GameState.h"
+#include "../Core/Vector2.h"
+#include "../Gameplay/GameConfig.h"
+#include "../Core/GameState.h"
 #include "Snake.h"
 #include "Food.h"
 

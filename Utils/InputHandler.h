@@ -1,6 +1,6 @@
 #pragma once
 #include "../Core/Vector2.h"
-#include "../Gameplay/GameState.h"
+#include "../Core/GameState.h"
 #include "../Gameplay/Snake.h"
 #include <graphics.h>
 

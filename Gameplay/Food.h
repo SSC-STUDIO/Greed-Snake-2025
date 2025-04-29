@@ -1,7 +1,7 @@
 #pragma once
 #include "../Core/Vector2.h"    
-#include "../Core/GameConfig.h" 
-#include "GameState.h" 
+#include "../Gameplay/GameConfig.h" 
+#include "../Core/GameState.h" 
 #include <graphics.h>
 
 // Food structure

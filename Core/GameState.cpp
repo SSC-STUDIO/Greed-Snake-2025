@@ -1,7 +1,8 @@
 #include "GameState.h"
 #include "../Core/Camera.h"
 #include "../UI/UI.h"
-#include "../Core/GameConfig.h"
+#include "../Gameplay/GameConfig.h"
+#include "../UI/UI.h"
 
 // Add static variables initializations
 DWORD GameState::lastTime = GetTickCount();

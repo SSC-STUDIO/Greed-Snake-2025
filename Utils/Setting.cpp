@@ -1,11 +1,4 @@
 #include "Setting.h"
-#include "..\Gameplay\GameState.h"
-#include <mmsystem.h>
-#include <tchar.h>
-#include "Button.h"
-#include "..\Core\GameConfig.h"
-#include <windows.h>
-#include <graphics.h>
 #pragma comment(lib, "winmm.lib")
 
 // Set volume

@@ -1,27 +1,27 @@
 #include "Rendering.h"
 #include <cmath> // For using sin function
-#include "..\Core\GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
 #pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
 
 // Add extern declaration for the animation timer defined in Main.cpp
-extern float animationTimer;
+extern float animationTimer; // Animation timer for visual effects
 
+// Function to draw the game area
 void DrawGameArea() {
     // Update animation timer - increment by a small amount each frame
-    animationTimer += 0.05f;
+    animationTimer += 0.05f; // Increment the animation timer
     
     // Draw background
-    setbkcolor(RGB(30, 30, 30));
-    cleardevice();
+    setbkcolor(RGB(30, 30, 30)); // Set background color
+    cleardevice(); // Clear the device
 
     // Get camera position
-    Vector2 cameraPos = GameState::Instance().camera.position;
+    Vector2 cameraPos = GameState::Instance().camera.position; // Get the current camera position
 
     // Calculate visible area
-    float screenLeft = cameraPos.x;
-    float screenRight = cameraPos.x + GameConfig::WINDOW_WIDTH;
-    float screenTop = cameraPos.y;
-    float screenBottom = cameraPos.y + GameConfig::WINDOW_HEIGHT;
+    float screenLeft = cameraPos.x; // Left boundary of the visible area
+    float screenRight = cameraPos.x + GameConfig::WINDOW_WIDTH; // Right boundary of the visible area
+    float screenTop = cameraPos.y; // Top boundary of the visible area
+    float screenBottom = cameraPos.y + GameConfig::WINDOW_HEIGHT; // Bottom boundary of the visible area
 
     // Draw lava area outside game boundaries - dark red color
     // First check which boundaries are in view
@@ -31,7 +31,7 @@ void DrawGameArea() {
     if (screenTop < GameConfig::PLAY_AREA_TOP) {
         solidrectangle(0, 0,
             GameConfig::WINDOW_WIDTH,
-            GameConfig::PLAY_AREA_TOP - cameraPos.y);
+            GameConfig::PLAY_AREA_TOP - cameraPos.y); // Draw lava area above the play area
     }
 
     // Check and draw bottom boundary lava area
@@ -39,14 +39,14 @@ void DrawGameArea() {
         solidrectangle(0,
             GameConfig::PLAY_AREA_BOTTOM - cameraPos.y,
             GameConfig::WINDOW_WIDTH,
-            GameConfig::WINDOW_HEIGHT);
+            GameConfig::WINDOW_HEIGHT); // Draw lava area below the play area
     }
 
     // Check and draw left boundary lava area
     if (screenLeft < GameConfig::PLAY_AREA_LEFT) {
         solidrectangle(0, 0,
             GameConfig::PLAY_AREA_LEFT - cameraPos.x,
-            GameConfig::WINDOW_HEIGHT);
+            GameConfig::WINDOW_HEIGHT); // Draw lava area to the left of the play area
     }
 
     // Check and draw right boundary lava area
@@ -54,207 +54,112 @@ void DrawGameArea() {
         solidrectangle(GameConfig::PLAY_AREA_RIGHT - cameraPos.x,
             0,
             GameConfig::WINDOW_WIDTH,
-            GameConfig::WINDOW_HEIGHT);
+            GameConfig::WINDOW_HEIGHT); // Draw lava area to the right of the play area
     }
 
     // Draw game boundary lines
     setlinecolor(RGB(150, 50, 50)); // Boundary line color
-    Vector2 topLeft(GameConfig::PLAY_AREA_LEFT, GameConfig::PLAY_AREA_TOP);
-    Vector2 bottomRight(GameConfig::PLAY_AREA_RIGHT, GameConfig::PLAY_AREA_BOTTOM);
+    Vector2 topLeft(GameConfig::PLAY_AREA_LEFT, GameConfig::PLAY_AREA_TOP); // Top left corner of the play area
+    Vector2 bottomRight(GameConfig::PLAY_AREA_RIGHT, GameConfig::PLAY_AREA_BOTTOM); // Bottom right corner of the play area
 
     rectangle(topLeft.x - cameraPos.x, topLeft.y - cameraPos.y,
-        bottomRight.x - cameraPos.x, bottomRight.y - cameraPos.y);
+        bottomRight.x - cameraPos.x, bottomRight.y - cameraPos.y); // Draw the boundary rectangle
 }
 
+// Function to draw food items
 void DrawFoods(const FoodItem* foodList, int foodCount) {
     for (int i = 0; i < foodCount; ++i) {
-        if (foodList[i].collisionRadius > 0) {
-            Vector2 screenPos = foodList[i].position - GameState::Instance().camera.position;
+        if (foodList[i].collisionRadius > 0) { // Check if the food item is active
+            Vector2 screenPos = foodList[i].position - GameState::Instance().camera.position; // Calculate screen position
             
             // Use the enhanced food drawing function for consistent appearance
             if (GameConfig::ANIMATIONS_ON) {
-                DrawEnhancedFood(screenPos, foodList[i].collisionRadius, foodList[i].colorValue, i);
+                DrawEnhancedFood(screenPos, foodList[i].collisionRadius, foodList[i].colorValue, i); // Draw food with animations
             } else {
                 // Simple drawing for when animations are off
-                DrawCircleWithCamera(screenPos, foodList[i].collisionRadius, foodList[i].colorValue);
+                DrawCircleWithCamera(screenPos, foodList[i].collisionRadius, foodList[i].colorValue); // Draw food without animations
             }
         }
     }
 }
 
-// Add a function for drawing food with enhanced visual effects
-void DrawEnhancedFood(const Vector2& screenPos, float radius, int color, int index) {
-    // Extract color components
-    int r = (color >> 16) & 0xFF;
-    int g = (color >> 8) & 0xFF;
-    int b = color & 0xFF;
-    
-    // Calculate animation effects
-    float pulse = sin(animationTimer + index * 0.5f) * 0.2f + 1.0f;
-    float sparklePhase = (animationTimer * 2 + index) * 3.14159f;
-    
-    // Create pulsing radius
-    float animatedRadius = radius * pulse;
-    
-    // Outer glow
-    setfillcolor(RGB(r/3, g/3, b/3));
-    setfillstyle(BS_SOLID, NULL, NULL);
-    fillcircle(screenPos.x, screenPos.y, animatedRadius * 2.0f);
-    
-    // Middle layer
-    setfillcolor(RGB(r/2, g/2, b/2));
-    fillcircle(screenPos.x, screenPos.y, animatedRadius * 1.5f);
-    
-    // Inner circle (main food)
-    setfillcolor(RGB(r, g, b));
-    fillcircle(screenPos.x, screenPos.y, animatedRadius);
-    
-    // Add highlight (small white circle in upper left)
-    setfillcolor(RGB(255, 255, 255));
-    fillcircle(screenPos.x - animatedRadius * 0.3f, 
-               screenPos.y - animatedRadius * 0.3f, 
-               animatedRadius * 0.25f);
-    
-    // Draw sparkles around the food
-    if (GameConfig::ANIMATIONS_ON) {
-        int numSparkles = 4;
-        for (int i = 0; i < numSparkles; i++) {
-            float angle = sparklePhase + i * (2 * 3.14159f / numSparkles);
-            float sparkleX = screenPos.x + cos(angle) * animatedRadius * 1.8f;
-            float sparkleY = screenPos.y + sin(angle) * animatedRadius * 1.8f;
-            
-            // Make sparkle size pulse in counterphase to the main food
-            float sparkleSize = animatedRadius * 0.2f * (1.2f - 0.2f * sin(animationTimer + index * 0.5f));
-            
-            // Draw sparkle
-            setfillcolor(RGB(255, 255, 200)); // Slightly yellow-ish white
-            fillcircle(sparkleX, sparkleY, sparkleSize);
-        }
-    }
-}
-
+// Function to draw visible objects in the game
 void DrawVisibleObjects(const FoodItem* foodList, int foodCount, 
                         const AISnake* aiSnakes, int aiSnakeCount,
                         const PlayerSnake& playerSnake) {
-    // 计算可见区域
-    Vector2 cameraPos = GameState::Instance().camera.position;
-    float screenLeft = cameraPos.x;
-    float screenRight = cameraPos.x + GameConfig::WINDOW_WIDTH;
-    float screenTop = cameraPos.y;
-    float screenBottom = cameraPos.y + GameConfig::WINDOW_HEIGHT;
+    // Calculate visible area
+    Vector2 cameraPos = GameState::Instance().camera.position; // Get camera position
+    float screenLeft = cameraPos.x; // Left boundary of the visible area
+    float screenRight = cameraPos.x + GameConfig::WINDOW_WIDTH; // Right boundary of the visible area
+    float screenTop = cameraPos.y; // Top boundary of the visible area
+    float screenBottom = cameraPos.y + GameConfig::WINDOW_HEIGHT; // Bottom boundary of the visible area
 
-    // 扩展可见区域以考虑部分可见的大对象
-    float margin = 100.0f;
-    screenLeft -= margin;
-    screenRight += margin;
-    screenTop -= margin;
-    screenBottom += margin;
+    // Expand visible area to consider partially visible large objects
+    float margin = 100.0f; // Margin for visibility
+    screenLeft -= margin; // Expand left boundary
+    screenRight += margin; // Expand right boundary
+    screenTop -= margin; // Expand top boundary
+    screenBottom += margin; // Expand bottom boundary
 
-    // 只绘制可见区域内的食物
+    // Only draw food within the visible area
     for (int i = 0; i < foodCount; ++i) {
-        const auto& food = foodList[i];
-        if (food.collisionRadius <= 0) continue;
+        const auto& food = foodList[i]; // Get food item
+        if (food.collisionRadius <= 0) continue; // Skip if food is not active
         
         if (food.position.x >= screenLeft && food.position.x <= screenRight &&
             food.position.y >= screenTop && food.position.y <= screenBottom) {
             
-            Vector2 foodScreenPos = food.position - cameraPos;
+            Vector2 foodScreenPos = food.position - cameraPos; // Calculate food screen position
             
-            // 使用增强的食物绘制函数
+            // Use enhanced food drawing function
             if (GameConfig::ANIMATIONS_ON) {
-                DrawEnhancedFood(foodScreenPos, food.collisionRadius, food.colorValue, i);
+                DrawEnhancedFood(foodScreenPos, food.collisionRadius, food.colorValue, i); // Draw food with animations
             } else {
-                DrawCircleWithCamera(foodScreenPos, food.collisionRadius, food.colorValue);
+                DrawCircleWithCamera(foodScreenPos, food.collisionRadius, food.colorValue); // Draw food without animations
             }
         }
     }
 
-    // 绘制AI蛇
+    // Draw AI snakes
     for (int i = 0; i < aiSnakeCount; ++i) {
-        const auto& snake = aiSnakes[i];
-        if (snake.radius <= 0) continue; // 跳过已移除的蛇
+        const auto& snake = aiSnakes[i]; // Get AI snake
+        if (snake.radius <= 0) continue; // Skip removed snakes
         
-        // 绘制AI蛇身体 - 从尾部到头部绘制，这样头部会在上层
+        // Draw AI snake body - from tail to head
         for (size_t j = 0; j < snake.segments.size(); ++j) {
-            const auto& segment = snake.segments[j];
+            const auto& segment = snake.segments[j]; // Get snake segment
             if (segment.position.x >= screenLeft && segment.position.x <= screenRight &&
                 segment.position.y >= screenTop && segment.position.y <= screenBottom) {
-                Vector2 segmentPos = segment.position - cameraPos;
-                // 使用新的蛇身绘制函数
-                DrawSnakeSegment(segmentPos, segment.radius, segment.color, j);
+                Vector2 segmentPos = segment.position - cameraPos; // Calculate segment screen position
+                DrawSnakeSegment(segmentPos, segment.radius, segment.color, j); // Draw each segment
             }
         }
         
-        // 绘制AI蛇头
+        // Draw AI snake head
         if (snake.position.x >= screenLeft && snake.position.x <= screenRight &&
             snake.position.y >= screenTop && snake.position.y <= screenBottom) {
-            Vector2 windowPos = snake.position - cameraPos;
-            // 为AI蛇头添加特殊效果
-            if (GameConfig::ANIMATIONS_ON) {
-                int r = (snake.color >> 16) & 0xFF;
-                int g = (snake.color >> 8) & 0xFF;
-                int b = (snake.color & 0xFF);
-                
-                // 头部外发光
-                setfillcolor(RGB(r/2, g/2, b/2));
-                fillcircle(windowPos.x, windowPos.y, snake.radius * 1.1f);
-            }
-            
-            // 绘制蛇头主体
-            DrawCircleWithCamera(windowPos, snake.radius, snake.color);
-            // 绘制眼睛
-            DrawSnakeEyes(windowPos, snake.direction, snake.radius);
+            Vector2 windowPos = snake.position - cameraPos; // Calculate head screen position
+            DrawCircleWithCamera(windowPos, snake.radius, snake.color); // Draw head
+            DrawSnakeEyes(windowPos, snake.direction, snake.radius); // Draw eyes
         }
     }
 
-    // 绘制玩家蛇的身体 - 先绘制身体，后绘制头部
+    // Draw player snake's body - first draw body, then head
     for (size_t i = 0; i < playerSnake.segments.size(); ++i) {
-        const auto& segment = playerSnake.segments[i];
+        const auto& segment = playerSnake.segments[i]; // Get player snake segment
         if (segment.position.x >= screenLeft && segment.position.x <= screenRight &&
             segment.position.y >= screenTop && segment.position.y <= screenBottom) {
-            Vector2 segmentPos = segment.position - cameraPos;
-            // 使用新的蛇身绘制函数，对玩家蛇使用更亮的效果
-            DrawSnakeSegment(segmentPos, segment.radius, segment.color, i);
+            Vector2 segmentPos = segment.position - cameraPos; // Calculate segment screen position
+            DrawSnakeSegment(segmentPos, segment.radius, segment.color, i); // Draw each segment
         }
     }
     
-    // 绘制玩家蛇头
+    // Draw player snake head
     if (playerSnake.position.x >= screenLeft && playerSnake.position.x <= screenRight &&
         playerSnake.position.y >= screenTop && playerSnake.position.y <= screenBottom) {
-        Vector2 headPos = playerSnake.position - cameraPos;
-        
-        // 检查无敌状态，添加特殊效果
-        bool isInvulnerable = false;
-        {
-            std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex);
-            isInvulnerable = GameState::Instance().isInvulnerable;
-        }
-        
-        // 添加玩家蛇头发光效果
-        if (GameConfig::ANIMATIONS_ON) {
-            int r = (playerSnake.color >> 16) & 0xFF;
-            int g = (playerSnake.color >> 8) & 0xFF;
-            int b = (playerSnake.color & 0xFF);
-            
-            // 无敌状态下添加金色光晕
-            if (isInvulnerable) {
-                // 脉动金色光环
-                float pulseScale = 1.3f + sin(animationTimer * 5) * 0.2f;
-                setfillcolor(RGB(255, 215, 0)); // 金色
-                fillcircle(headPos.x, headPos.y, playerSnake.radius * pulseScale);
-                
-                // 内部白色光环
-                setfillcolor(RGB(255, 255, 200));
-                fillcircle(headPos.x, headPos.y, playerSnake.radius * 1.1f);
-            }
-            
-            // 普通头部外发光
-            setfillcolor(RGB(r/2, g/2, b/2));
-            fillcircle(headPos.x, headPos.y, playerSnake.radius * 1.2f);
-        }
-        
-        DrawCircleWithCamera(headPos, playerSnake.radius, playerSnake.color);
-        DrawSnakeEyes(headPos, playerSnake.direction, playerSnake.radius);
+        Vector2 headPos = playerSnake.position - cameraPos; // Calculate head screen position
+        DrawCircleWithCamera(headPos, playerSnake.radius, playerSnake.color); // Draw head
+        DrawSnakeEyes(headPos, playerSnake.direction, playerSnake.radius); // Draw eyes
     }
 }
 
@@ -487,4 +392,55 @@ void DrawPauseMenu() {
     outtextxy(pauseBoxX + (pauseBoxWidth - promptWidth) / 2, 
             pauseBoxY + pauseBoxHeight - 30,
             promptText);
+}
+
+// Add a function for drawing food with enhanced visual effects
+void DrawEnhancedFood(const Vector2& screenPos, float radius, int color, int index) {
+    // Extract color components
+    int r = (color >> 16) & 0xFF;
+    int g = (color >> 8) & 0xFF;
+    int b = color & 0xFF;
+    
+    // Calculate animation effects
+    float pulse = sin(animationTimer + index * 0.5f) * 0.2f + 1.0f;
+    float sparklePhase = (animationTimer * 2 + index) * 3.14159f;
+    
+    // Create pulsing radius
+    float animatedRadius = radius * pulse;
+    
+    // Outer glow
+    setfillcolor(RGB(r/3, g/3, b/3));
+    setfillstyle(BS_SOLID, NULL, NULL);
+    fillcircle(screenPos.x, screenPos.y, animatedRadius * 2.0f);
+    
+    // Middle layer
+    setfillcolor(RGB(r/2, g/2, b/2));
+    fillcircle(screenPos.x, screenPos.y, animatedRadius * 1.5f);
+    
+    // Inner circle (main food)
+    setfillcolor(RGB(r, g, b));
+    fillcircle(screenPos.x, screenPos.y, animatedRadius);
+    
+    // Add highlight (small white circle in upper left)
+    setfillcolor(RGB(255, 255, 255));
+    fillcircle(screenPos.x - animatedRadius * 0.3f, 
+               screenPos.y - animatedRadius * 0.3f, 
+               animatedRadius * 0.25f);
+    
+    // Draw sparkles around the food
+    if (GameConfig::ANIMATIONS_ON) {
+        int numSparkles = 4;
+        for (int i = 0; i < numSparkles; i++) {
+            float angle = sparklePhase + i * (2 * 3.14159f / numSparkles);
+            float sparkleX = screenPos.x + cos(angle) * animatedRadius * 1.8f;
+            float sparkleY = screenPos.y + sin(angle) * animatedRadius * 1.8f;
+            
+            // Make sparkle size pulse in counterphase to the main food
+            float sparkleSize = animatedRadius * 0.2f * (1.2f - 0.2f * sin(animationTimer + index * 0.5f));
+            
+            // Draw sparkle
+            setfillcolor(RGB(255, 255, 200)); // Slightly yellow-ish white
+            fillcircle(sparkleX, sparkleY, sparkleSize);
+        }
+    }
 }

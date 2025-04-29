@@ -115,7 +115,7 @@
     <Image Include="Resource\Exit.png">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="Resource\Geed-Snake.ico">
+    <Image Include="Resource\Greed-Snake.ico">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="Resource\Greed-Snake-BG.png">

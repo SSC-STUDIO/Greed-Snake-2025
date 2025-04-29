@@ -1,7 +1,7 @@
 #include "Collisions.h"
-#include "Snake.h"
-#include "Food.h"
-#include "..\Core\GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
+#include "..\Gameplay\Snake.h"
+#include "..\Gameplay\Food.h"
+#include "..\Gameplay\GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
 #include <cmath> // For sin/cos in particle effects
 #pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
 
@@ -405,7 +405,7 @@ void CollisionManager::CheckCollisions(Snake* snake, AISnake* aiSnakes, int aiSn
                 Vector2 direction(cos(dirAngle), sin(dirAngle));
                 
                 // Initialize new AI snake
-                aiSnakes[i].Init();
+                aiSnakes[i].Initialize();
                 aiSnakes[i].position = spawnPos;
                 aiSnakes[i].direction = direction;
                 aiSnakes[i].radius = GameConfig::INITIAL_SNAKE_SIZE * 0.8f;

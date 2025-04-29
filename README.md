@@ -25,7 +25,7 @@ A modern implementation of the classic Snake game with enhanced features and bea
 
 1. Clone the repository | 克隆仓库:
 ```bash
-git clone https://github.com/Crs10259/Greed-Snake-Remake.git
+git clone https://github.com/Crs10259/Greed-Snake-2025.git
 ```
 
 2. Open the project in Visual Studio | 在Visual Studio中打开项目

@@ -2,7 +2,7 @@
 #include <tchar.h>
 #include <conio.h>
 #include <mmsystem.h>
-#include "Setting.h"
+#include "../Utils/Setting.h"
 #pragma comment(lib, "winmm.lib")
 
 // Global button list

@@ -127,33 +127,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Button.h" />
     <ClInclude Include="Core\Camera.h" />
     <ClInclude Include="Gameplay\Collisions.h" />
     <ClInclude Include="Gameplay\Food.h" />
-    <ClInclude Include="Core\GameConfig.h" />
+    <ClInclude Include="Gameplay\GameConfig.h" />
     <ClInclude Include="Gameplay\GameInitializer.h" />
     <ClInclude Include="Gameplay\GameState.h" />
+    <ClInclude Include="UI\Button.h" />
     <ClInclude Include="Utils\InputHandler.h" />
     <ClInclude Include="Utils\Rendering.h" />
-    <ClInclude Include="UI\Setting.h" />
     <ClInclude Include="Gameplay\Snake.h" />
     <ClInclude Include="UI\UI.h" />
     <ClInclude Include="Core\Vector2.h" />
+    <ClInclude Include="Utils\Setting.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="UI\Button.cpp" />
-    <ClCompile Include="Gameplay\Collisions.cpp" />
+    <ClCompile Include="Core\Collisions.cpp" />
+    <ClCompile Include="Core\GameState.cpp" />
     <ClCompile Include="Gameplay\Food.cpp" />
     <ClCompile Include="Gameplay\GameInitializer.cpp" />
-    <ClCompile Include="Gameplay\GameState.cpp" />
+    <ClCompile Include="UI\Button.cpp" />
     <ClCompile Include="Utils\InputHandler.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Utils\Rendering.cpp" />
-    <ClCompile Include="UI\Setting.cpp" />
     <ClCompile Include="Gameplay\Snake.cpp" />
     <ClCompile Include="UI\UI.cpp" />
     <ClCompile Include="Core\Vector2.cpp" />
+    <ClCompile Include="Utils\Setting.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resource\About.png" />

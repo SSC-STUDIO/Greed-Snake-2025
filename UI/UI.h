@@ -1,5 +1,5 @@
 #pragma once
-#include "../Core/GameConfig.h"
+#include "../Gameplay/GameConfig.h"
 #include "Button.h"
 #include <graphics.h>
 #include <windows.h>

@@ -1,6 +1,6 @@
 #pragma once
 #include "../Core/Vector2.h"
-#include "Snake.h" 
+#include "../Gameplay/Snake.h" 
 
 // Forward declarations
 class Snake;
@@ -21,3 +21,4 @@ public:
 };
 void DrawEatAISnakeEffect(const Vector2& position, int color, float radius);
 void DrawAISnakeHitPlayerEffect(const Vector2& position, int color, float radius);
+void UpdateGrowthAnimation(float deltaTime);

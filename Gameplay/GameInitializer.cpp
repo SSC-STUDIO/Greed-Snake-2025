@@ -1,6 +1,6 @@
 #include "GameInitializer.h"
-#include "..\Core\GameConfig.h"
-#include "Collisions.h"
+#include "../Gameplay/GameConfig.h"
+#include "../Core/Collisions.h"
 #include <algorithm>
 
 // Global variables (imported from Main.cpp)
@@ -39,7 +39,7 @@ void InitializeAISnakes() {
     aiSnakeList.resize(gameState.aiSnakeCount);
     
     for (auto& aiSnake : aiSnakeList) {
-        aiSnake.Init();
+        aiSnake.Initialize();
         
         // Adjust AI behavior based on difficulty
         aiSnake.aggressionFactor = gameState.aiAggression;

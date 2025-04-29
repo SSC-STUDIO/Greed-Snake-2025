@@ -1,7 +1,6 @@
 #include "InputHandler.h"
-#include "..\Core\GameConfig.h"
 #include <windows.h>
-#include "..\UI\UI.h"
+#include "../UI/UI.h"
 
 // Global declaration (imported from Main.cpp)
 extern Snake snake[1];
