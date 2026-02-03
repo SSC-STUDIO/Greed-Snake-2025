@@ -1,48 +1,54 @@
+/**
+ * @file Rendering.cpp
+ * @brief 渲染系统 - 处理所有游戏绘制和视觉效果
+ */
 #include "Rendering.h"
-#include <cmath> // For using sin function
-#pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
+#include <cmath>
+#pragma warning(disable: 4996)
 
-// Add extern declaration for the animation timer defined in Main.cpp
-extern float animationTimer; // Animation timer for visual effects
+extern float animationTimer;
 
-// Function to draw the game area
+/**
+ * @brief 绘制游戏区域
+ * 
+ * 绘制背景、边界和岩浆区域，支持相机移动
+ */
 void DrawGameArea() {
-    // Update animation timer - increment by a small amount each frame
-    animationTimer += 0.05f; // Increment the animation timer
+    animationTimer += 0.05f;
     
-    // Draw background
-    setbkcolor(RGB(30, 30, 30)); // Set background color
-    cleardevice(); // Clear the device
+    setbkcolor(RGB(30, 30, 30));
+    cleardevice();
 
-    // Get camera position
-    Vector2 cameraPos = GameState::Instance().camera.position; // Get the current camera position
+    Vector2 cameraPos = GameState::Instance().camera.position;
 
-    // Calculate visible area
-    float screenLeft = cameraPos.x; // Left boundary of the visible area
-    float screenRight = cameraPos.x + GameConfig::WINDOW_WIDTH; // Right boundary of the visible area
-    float screenTop = cameraPos.y; // Top boundary of the visible area
-    float screenBottom = cameraPos.y + GameConfig::WINDOW_HEIGHT; // Bottom boundary of the visible area
+    float screenLeft = cameraPos.x;
+    float screenRight = cameraPos.x + GameConfig::WINDOW_WIDTH;
+    float screenTop = cameraPos.y;
+    float screenBottom = cameraPos.y + GameConfig::WINDOW_HEIGHT;
 
-    // Draw lava area outside game boundaries - dark red color
-    // First check which boundaries are in view
-    setfillcolor(RGB(80, 20, 20)); // Dark red
+    setfillcolor(RGB(80, 20, 20));
 
-    // Check and draw top boundary lava area
+    // 绘制上边界
     if (screenTop < GameConfig::PLAY_AREA_TOP) {
         solidrectangle(0, 0,
             GameConfig::WINDOW_WIDTH,
-            GameConfig::PLAY_AREA_TOP - cameraPos.y); // Draw lava area above the play area
+            GameConfig::PLAY_AREA_TOP - cameraPos.y);
     }
 
-    // Check and draw bottom boundary lava area
+    // 绘制下边界岩浆区域
     if (screenBottom > GameConfig::PLAY_AREA_BOTTOM) {
         solidrectangle(0,
             GameConfig::PLAY_AREA_BOTTOM - cameraPos.y,
             GameConfig::WINDOW_WIDTH,
-            GameConfig::WINDOW_HEIGHT); // Draw lava area below the play area
+            GameConfig::WINDOW_HEIGHT);
     }
 
-    // Check and draw left boundary lava area
+    // 绘制左边界岩浆区域
+    if (screenLeft < GameConfig::PLAY_AREA_LEFT) {
+        solidrectangle(0, 0,
+            GameConfig::PLAY_AREA_LEFT - cameraPos.x,
+            GameConfig::WINDOW_HEIGHT);
+    }
     if (screenLeft < GameConfig::PLAY_AREA_LEFT) {
         solidrectangle(0, 0,
             GameConfig::PLAY_AREA_LEFT - cameraPos.x,

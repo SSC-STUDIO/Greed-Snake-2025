@@ -27,444 +27,406 @@
 #include "Utils/InputHandler.h"       
 #include "Gameplay/GameInitializer.h"           
 #include "UI/UI.h"                 
-#pragma comment(lib, "winmm.lib") // Required for multimedia functions
-#pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
+#pragma comment(lib, "winmm.lib")  // 多媒体函数库
+#pragma warning(disable: 4996)      // 禁用_tcscpy和_stprintf安全警告
 
-// Define the extern variables declared in GameConfig.h
-bool GameConfig::SOUND_ON = true; // Sound toggle
-bool GameConfig::ANIMATIONS_ON = true; // Animation toggle
+// GameConfig全局变量定义
+bool GameConfig::SOUND_ON = true;      // 音效开关
+bool GameConfig::ANIMATIONS_ON = true; // 动画开关
 
-// Screen dimensions
-const int windowWidth = GameConfig::WINDOW_WIDTH; // Width of the game window
-const int windowHeight = GameConfig::WINDOW_HEIGHT; // Height of the game window
+// 窗口尺寸常量
+const int windowWidth = GameConfig::WINDOW_WIDTH; 
+const int windowHeight = GameConfig::WINDOW_HEIGHT; 
 
-// Game area boundaries
-const int playAreaWidth = GameConfig::WINDOW_WIDTH; // Width of the play area
-const int playAreaHeight = GameConfig::WINDOW_HEIGHT; // Height of the play area
-const int playAreaMarginX = GameConfig::PLAY_AREA_MARGIN; // Margin for the play area on the X-axis
-const int playAreaMarginY = GameConfig::PLAY_AREA_MARGIN; // Margin for the play area on the Y-axis
+// 游戏区域边界
+const int playAreaWidth = GameConfig::WINDOW_WIDTH; 
+const int playAreaHeight = GameConfig::WINDOW_HEIGHT; 
+const int playAreaMarginX = GameConfig::PLAY_AREA_MARGIN; 
+const int playAreaMarginY = GameConfig::PLAY_AREA_MARGIN; 
 
-// Player status
-Vector2 playerPosition = GameConfig::PLAYER_DEFAULT_POS; // Initial position of the player
-Vector2 playerDirection(0, 1); // Initial direction of the player (downward)
+// 玩家状态
+Vector2 playerPosition = GameConfig::PLAYER_DEFAULT_POS; 
+Vector2 playerDirection(0, 1); 
 
-// Game timing
-float deltaTime = GameState::Instance().deltaTime; // Time increment for game updates
+// 游戏计时
+float deltaTime = GameState::Instance().deltaTime; 
 
-// Animation timer for visual effects
-float animationTimer = 0.0f; // Timer for animations
+// 动画计时器
+float animationTimer = 0.0f;
 
-// Arrays and collections
-FoodItem foodList[GameConfig::MAX_FOOD_COUNT]; // Array to hold food items
-std::vector<SnakeSegment> snakeSegments(5); // Vector to hold snake segments
-  
-// AI snake container
-std::vector<AISnake> aiSnakeList; // Vector to hold AI snakes
+// 游戏对象集合
+FoodItem foodList[GameConfig::MAX_FOOD_COUNT];
+std::vector<SnakeSegment> snakeSegments(5); 
+std::vector<AISnake> aiSnakeList;
+Snake snake[1];  // 玩家蛇
 
-// Player snake
-Snake snake[1]; // Array to hold the player snake
-
-// Game system class
+// 游戏系统类 - 管理所有游戏对象和逻辑
 class GameSystem {
 private:
-    std::vector<FoodItem> foodItems; // Vector to hold food items
-    PlayerSnake playerSnake; // Player snake instance
-    std::vector<AISnake> aiSnakes; // Vector to hold AI snakes
-    Camera camera; // Camera instance
+    std::vector<FoodItem> foodItems; // 食物集合
+    PlayerSnake playerSnake;         // 玩家蛇
+    std::vector<AISnake> aiSnakes;   // AI蛇集合
+    Camera camera;                   // 相机
     
 public:
     GameSystem() {
-        InitializeGame(); // Initialize the game
+        InitializeGame(); // 初始化游戏
     }
     
     void InitializeGame() {
-        // Initialize food
-        foodItems.resize(GameConfig::MAX_FOOD_COUNT); // Resize food items vector
+        // 初始化食物
+        foodItems.resize(GameConfig::MAX_FOOD_COUNT);
         for (int i = 0; i < GameConfig::MAX_FOOD_COUNT; ++i) {
-            InitFood(foodList, i, GameState::Instance().currentPlayerSpeed); // Initialize each food item
+            InitFood(foodList, i, GameState::Instance().currentPlayerSpeed);
         }
         
-        // Initialize player snake
-        InitializePlayerSnake(); // Set up the player snake
+        // 初始化玩家蛇
+        InitializePlayerSnake();
         
-        // Initialize AI snakes
-        InitializeAISnakes(); // Set up AI snakes
+        // 初始化AI蛇
+        InitializeAISnakes();
         
-        // Reset game state
-        GameState::Instance().Initial(); // Initialize game state
+        // 重置游戏状态
+        GameState::Instance().Initial();
     }
     
     void Update(float deltaTime) {
-        if (!GameState::Instance().isGameRunning) return; // Exit if the game is not running
+        if (!GameState::Instance().isGameRunning) return; 
         
-        // Update camera
-        UpdateCamera(); // Update camera position
-        
-        // Update player snake
-        UpdatePlayerSnake(deltaTime); // Update player snake position
-        
-        // Update AI snakes
-        UpdateAISnakes(deltaTime); // Update AI snakes
-        
-        // Update food
-        UpdateFoods(foodList, GameConfig::MAX_FOOD_COUNT); // Update food items
-        
-        // Check collisions
-        CheckCollisions(); // Check for collisions
-        
-        // Update game state
-        GameState::Instance().UpdateGameTime(deltaTime); // Update game time
+        UpdateCamera();              // 更新相机
+        UpdatePlayerSnake(deltaTime); // 更新玩家蛇
+        UpdateAISnakes(deltaTime);   // 更新AI蛇
+        UpdateFoods(foodList, GameConfig::MAX_FOOD_COUNT); // 更新食物
+        CheckCollisions();           // 检测碰撞
+        GameState::Instance().UpdateGameTime(deltaTime);   // 更新游戏时间
     }
     
     void Draw() {
-        if (!GameState::Instance().isGameRunning) return; // Exit if the game is not running
+        if (!GameState::Instance().isGameRunning) return;
         
-        BeginBatchDraw(); // Start batch drawing
+        BeginBatchDraw(); // 开始批量绘制
         
-        // Draw game area
-        DrawGameArea(); // Draw the game area
-        
-        // Draw food - using correct function signature
-        DrawFoods(foodItems.data(), foodItems.size());  // Pass correct parameters if needed
+        DrawGameArea();   // 绘制游戏区域
+        DrawFoods(foodItems.data(), foodItems.size()); // 绘制食物
 
-        // Draw AI snakes
+        // 绘制AI蛇
         for (const auto& aiSnake : aiSnakes) {
-            aiSnake.Draw(camera); // Draw each AI snake
+            aiSnake.Draw(camera);
         }
         
-        // Draw player snake
-        playerSnake.Draw(camera); // Draw the player snake
+        playerSnake.Draw(camera); // 绘制玩家蛇
+        DrawUI();                 // 绘制UI
         
-        // Draw UI
-        DrawUI(); // Draw UI elements
-        
-        EndBatchDraw(); // End batch drawing
+        EndBatchDraw(); // 结束批量绘制
     }
 };
 
-// Modify the Draw function to ensure thread safety when initializing graphics
+// 主绘制函数 - 确保线程安全的图形初始化
 void Draw() {
-    // Error handling
     try {
-        // The rest of the Draw function...
         
-        while (GameState::Instance().GetIsGameRunning()) {
-            auto& gameState = GameState::Instance(); // Get the current game state
-            BeginBatchDraw(); // Start batch drawing
+while (GameState::Instance().GetIsGameRunning()) {
+            auto& gameState = GameState::Instance();
+            BeginBatchDraw();
             
-            // Safely get pause state
-            bool isPaused = gameState.GetIsPaused(); // Check if the game is paused
+            bool isPaused = gameState.GetIsPaused();
             
-            // Skip all updates if the game is paused, just maintain the current display
+            // 游戏未暂停时更新游戏对象
             if (!isPaused) {
-                // Update camera
-                UpdateCamera(); // Update camera position
+                UpdateCamera();                    // 更新相机
+                UpdatePlayerSnake(gameState.deltaTime); // 更新玩家蛇
+                UpdateAISnakes(gameState.deltaTime);   // 更新AI蛇
+                UpdateFoods(foodList, GameConfig::MAX_FOOD_COUNT); // 更新食物
+                CheckGameState(snake);             // 检查游戏状态
+                CheckCollisions();                 // 检测碰撞
                 
-                // Update game objects only when not paused
-                UpdatePlayerSnake(gameState.deltaTime); // Update player snake
-                UpdateAISnakes(gameState.deltaTime); // Update AI snakes
-                UpdateFoods(foodList, GameConfig::MAX_FOOD_COUNT); // Update food items
-                
-                // Check collision and game state only when not paused
-                CheckGameState(snake);  
-                CheckCollisions(); // Check for collisions
-                
-                // Update animation timer only when not paused
+                // 更新动画计时器
                 {
-                    std::lock_guard<std::mutex> lock(gameState.stateMutex); // Lock the game state mutex
-                    animationTimer += gameState.deltaTime; // Increment animation timer
+                    std::lock_guard<std::mutex> lock(gameState.stateMutex);
+                    animationTimer += gameState.deltaTime;
                     if (animationTimer > 1000.0f) {
-                        animationTimer = 0.0f; // Reset timer if it exceeds 1000ms
+                        animationTimer = 0.0f;
                     }
                 }
             }
             
-            // Always draw the current state of the game
-            DrawGameArea(); // Draw the game area
+            // 始终绘制当前游戏状态
+            DrawGameArea();
             
-            // Create thread-safe copy of snake object
-            PlayerSnake playerSnakeObj; // Create a copy of the player snake
+            // 创建线程安全的蛇对象副本
+            PlayerSnake playerSnakeObj;
             {
-                std::lock_guard<std::mutex> lock(gameState.stateMutex); // Lock the game state mutex
-                playerSnakeObj.position = snake[0].position; // Copy position
-                playerSnakeObj.direction = snake[0].direction; // Copy direction
-                playerSnakeObj.radius = snake[0].radius; // Copy radius
-                playerSnakeObj.color = snake[0].color; // Copy color
+                std::lock_guard<std::mutex> lock(gameState.stateMutex);
+                playerSnakeObj.position = snake[0].position;
+                playerSnakeObj.direction = snake[0].direction;
+                playerSnakeObj.radius = snake[0].radius;
+                playerSnakeObj.color = snake[0].color;
                 
-                // Copy snake body segments
-                playerSnakeObj.segments.resize(snake[0].segments.size()); // Resize segments vector
+                // 复制蛇身体段
+                playerSnakeObj.segments.resize(snake[0].segments.size());
                 for (size_t i = 0; i < snake[0].segments.size(); ++i) {
-                    playerSnakeObj.segments[i] = snake[0].segments[i]; // Copy each segment
+                    playerSnakeObj.segments[i] = snake[0].segments[i];
                 }
             }
             
             DrawVisibleObjects(foodList, GameConfig::MAX_FOOD_COUNT, 
                               aiSnakeList.data(), 
                               static_cast<int>(aiSnakeList.size()), 
-                              playerSnakeObj); // Draw all visible objects
+                              playerSnakeObj); // 绘制所有可见对象
 
-            // Update growth animation effect only when not paused
+            // 仅在未暂停时更新生长动画
             if (!isPaused) {
-                UpdateGrowthAnimation(gameState.deltaTime); // Update growth animation
+                UpdateGrowthAnimation(gameState.deltaTime);
             }
-                          
-            // Draw UI elements
-            DrawUI(); // Draw UI elements
+                           
+            DrawUI(); // 绘制UI
             
-            EndBatchDraw(); // End batch drawing
-            // Add frame rate control
-            Sleep(1000 / 60);  // Limit to approximately 60 FPS
+            EndBatchDraw(); // 结束批量绘制
+            Sleep(1000 / 60);  // 帧率控制，约60FPS
         }
     }
     catch (const std::exception& e) {
-        // Catch and log serious errors
-        OutputDebugStringA(e.what()); // Output error message
-        MessageBox(GetHWnd(), _T("Drawing thread encountered an error"), _T("Error"), MB_OK | MB_ICONERROR);
+        // 捕获并记录严重错误
+        OutputDebugStringA(e.what());
+        MessageBox(GetHWnd(), _T("绘制线程遇到错误"), _T("错误"), MB_OK | MB_ICONERROR);
         
-        // Ensure the game can exit properly
-        GameState::Instance().SetIsGameRunning(false); // Set game running state to false
+        // 确保游戏能正常退出
+        GameState::Instance().SetIsGameRunning(false);
     }
 }
 
 int main() {
-    // Initialize graphics first in the main thread
-    initgraph(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT); // Initialize graphics window
+    // 初始化图形系统
+    initgraph(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
 
-    // Play start animation
-    PlayStartAnimation(); // Play the start animation
+    PlayStartAnimation(); // 播放开场动画
+    LoadButton();        // 加载按钮
 
-    LoadButton(); // Load buttons
-
-    // Main program loop - keep running until exit is selected
-    bool quitProgram = false; // Flag to control the main loop
+    // 主程序循环 - 直到选择退出
+    bool quitProgram = false;
     
     while (!quitProgram) {
-        // Load and scale background image before each menu display
-        IMAGE backgroundImage; // Declare background image
-        loadimage(&backgroundImage, _T(".\\Resource\\Greed-Snake-BG.png")); // Load background image
+        // 加载并缩放背景图片
+        IMAGE backgroundImage;
+        loadimage(&backgroundImage, _T(".\\Resource\\Greed-Snake-BG.png"));
 
-        // Scale background to fit window
-        IMAGE scaledBG; // Declare scaled background image
-        scaledBG.Resize(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT); // Resize background
+        // 缩放背景以适应窗口
+        IMAGE scaledBG;
+        scaledBG.Resize(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
         StretchBlt(GetImageHDC(&scaledBG), 0, 0, GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT,
-            GetImageHDC(&backgroundImage), 0, 0, backgroundImage.getwidth(), backgroundImage.getheight(), SRCCOPY); // Stretch the background image
+            GetImageHDC(&backgroundImage), 0, 0, backgroundImage.getwidth(), backgroundImage.getheight(), SRCCOPY);
 
-        // Apply the background image
-        BeginBatchDraw(); // Start batch drawing
-        putimage(0, 0, &scaledBG); // Draw the scaled background
-        EndBatchDraw(); // End batch drawing
+        // 应用背景图片
+        BeginBatchDraw();
+        putimage(0, 0, &scaledBG);
+        EndBatchDraw();
 
-        // Menu loop
-        bool showMenu = true; // Flag to control the menu loop
-        bool startGame = false; // Flag to control game start
+        // 菜单循环
+        bool showMenu = true;
+        bool startGame = false;
         
-        while (showMenu && !quitProgram) {
-            // Use ShowGameMenu function from UI.h to display menu
-            int menuChoice = ShowGameMenu(); // Get the user's menu choice
+while (showMenu && !quitProgram) {
+            int menuChoice = ShowGameMenu(); // 显示菜单并获取用户选择
             
             switch (menuChoice) {
                 case StartGame:
-                    cleardevice(); // Clear the device
-                    startGame = true; // Set flag to start game
-                    showMenu = false; // Exit menu loop
+                    cleardevice();
+                    startGame = true;
+                    showMenu = false;
                     break;
                     
                 case Setting:
-                    ShowSettings(windowWidth, windowHeight); // Show settings menu
-                    // Redraw background after settings
-                    putimage(0, 0, &scaledBG); // Redraw the background
+                    ShowSettings(windowWidth, windowHeight); // 显示设置菜单
+                    putimage(0, 0, &scaledBG); // 重绘背景
                     break;
                     
                 case About:
-                    ShowAbout(); // Show about dialog
-                    // Redraw background after about screen
-                    putimage(0, 0, &scaledBG); // Redraw the background
+                    ShowAbout(); // 显示关于对话框
+                    putimage(0, 0, &scaledBG); // 重绘背景
                     break;
                     
                 case Exit:
-                    quitProgram = true; // Set flag to exit program
-                    showMenu = false; // Exit menu loop
+                    quitProgram = true;
+                    showMenu = false;
                     break;
                     
                 default:
-                    break; // Do nothing for unrecognized choice
+                    break;
             }
         }
 
-        // Game main loop
+// 游戏主循环
         while (startGame && !quitProgram) {
-            GameState::Instance().Initial(); // Initialize game state
-            InitGlobal(); // Initialize global variables
+            GameState::Instance().Initial(); // 初始化游戏状态
+            InitGlobal();                   // 初始化全局变量
 
-            PlayBackgroundMusic(); // Play background music
+            PlayBackgroundMusic();          // 播放背景音乐
 
-            // Initialize player snake
-            Vector2 centerPos(windowWidth / 2, (windowHeight / 2)); // Calculate center position
-            snake[0].position = centerPos; // Set player snake position
-            snake[0].direction = Vector2(1, 0); // Set player snake direction
-            snake[0].radius = GameConfig::INITIAL_SNAKE_SIZE; // Set player snake radius
-            snake[0].color = HSLtoRGB(255, 255, 255); // Set player snake color
+            // 初始化玩家蛇
+            Vector2 centerPos(windowWidth / 2, (windowHeight / 2));
+            snake[0].position = centerPos;
+            snake[0].direction = Vector2(1, 0);
+            snake[0].radius = GameConfig::INITIAL_SNAKE_SIZE;
+            snake[0].color = HSLtoRGB(255, 255, 255);
 
-            // Initialize snake body segments
-            snake[0].segments.resize(4); // Resize segments vector
+            // 初始化蛇身体段
+            snake[0].segments.resize(4);
             for (int i = 0; i < snake[0].segments.size(); i++) {
-                snake[0].segments[i].position = centerPos - Vector2(1, 0) * ((i+1) * GameConfig::SNAKE_SEGMENT_SPACING); // Set segment position
-                snake[0].segments[i].direction = Vector2(1, 0); // Set segment direction
-                snake[0].segments[i].radius = GameConfig::INITIAL_SNAKE_SIZE; // Set segment radius
-                snake[0].segments[i].color = HSLtoRGB(255, 255, 255); // Set segment color
+                snake[0].segments[i].position = centerPos - Vector2(1, 0) * ((i+1) * GameConfig::SNAKE_SEGMENT_SPACING);
+                snake[0].segments[i].direction = Vector2(1, 0);
+                snake[0].segments[i].radius = GameConfig::INITIAL_SNAKE_SIZE;
+                snake[0].segments[i].color = HSLtoRGB(255, 255, 255);
             }
 
-            // Initialize food positions
+            // 初始化食物位置
             for (int i = 0; i < GameConfig::MAX_FOOD_COUNT; ++i) {
-                InitFood(foodList, i, GameState::Instance().currentPlayerSpeed); // Initialize each food item
+                InitFood(foodList, i, GameState::Instance().currentPlayerSpeed);
             }
 
-            // Initialize AI snakes
-            InitializeAISnakes(); // Set up AI snakes
+            InitializeAISnakes(); // 初始化AI蛇
 
-            // 添加线程异常处理
-            std::exception_ptr drawThreadException = nullptr; // Pointer for draw thread exceptions
-            std::exception_ptr inputThreadException = nullptr; // Pointer for input thread exceptions
+            // 线程异常处理
+            std::exception_ptr drawThreadException = nullptr;
+            std::exception_ptr inputThreadException = nullptr;
             
-            // 使用异步函数调用，可以捕获异常
+// 启动异步线程并捕获异常
             std::thread draw([&drawThreadException]() {
                 try {
-                    Draw(); // Call draw function
+                    Draw();
                 } catch(...) {
-                    drawThreadException = std::current_exception(); // Capture exception
+                    drawThreadException = std::current_exception();
                 }
             });
             
             std::thread input([&inputThreadException]() {
                 try {
-                    EnterChanges(); // Call input handling function
+                    EnterChanges();
                 } catch(...) {
-                    inputThreadException = std::current_exception(); // Capture exception
+                    inputThreadException = std::current_exception();
                 }
             });
 
-            // Game running loop
-            bool gameRunning = true; // Flag to control game running state
+            // 游戏运行循环
+            bool gameRunning = true;
             while (gameRunning) {
-                // 检查线程是否发生异常
+                // 检查线程异常
                 if (drawThreadException) {
                     try {
-                        std::rethrow_exception(drawThreadException); // Rethrow exception
+                        std::rethrow_exception(drawThreadException);
                     } catch (const std::exception& e) {
-                        MessageBox(GetHWnd(), _T("Drawing thread error occurred"), _T("Error"), MB_OK | MB_ICONERROR); // Show error message
-                        OutputDebugStringA(e.what()); // Output error message
+                        MessageBox(GetHWnd(), _T("绘制线程错误"), _T("错误"), MB_OK | MB_ICONERROR);
+                        OutputDebugStringA(e.what());
                     }
-                    GameState::Instance().SetIsGameRunning(false); // Set game running state to false
-                    gameRunning = false; // Exit game loop
+                    GameState::Instance().SetIsGameRunning(false);
+                    gameRunning = false;
                     break;
                 }
                 
                 if (inputThreadException) {
                     try {
-                        std::rethrow_exception(inputThreadException); // Rethrow exception
+                        std::rethrow_exception(inputThreadException);
                     } catch (const std::exception& e) {
-                        MessageBox(GetHWnd(), _T("Input thread error occurred"), _T("Error"), MB_OK | MB_ICONERROR); // Show error message
-                        OutputDebugStringA(e.what()); // Output error message
+                        MessageBox(GetHWnd(), _T("输入线程错误"), _T("错误"), MB_OK | MB_ICONERROR);
+                        OutputDebugStringA(e.what());
                     }
-                    GameState::Instance().SetIsGameRunning(false); // Set game running state to false
-                    gameRunning = false; // Exit game loop
+                    GameState::Instance().SetIsGameRunning(false);
+                    gameRunning = false;
                     break;
                 }
                 
-                // 检查是否通过ESC菜单选择退出游戏
-                bool shouldExit; // Flag to check if exit is requested
+// 检查ESC菜单退出请求
+                bool shouldExit;
                 {
-                    std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex); // Lock the game state mutex
-                    shouldExit = GameState::Instance().exitGame; // Check exit flag
+                    std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex);
+                    shouldExit = GameState::Instance().exitGame;
                 }
                 
                 if (shouldExit) {
-                    quitProgram = true; // Set flag to exit program
-                    gameRunning = false; // Exit game loop
-                    GameState::Instance().SetIsGameRunning(false); // Set game running state to false
+                    quitProgram = true;
+                    gameRunning = false;
+                    GameState::Instance().SetIsGameRunning(false);
                     break;
                 }
                 
-                // 安全地获取游戏状态
-                bool isGameRunning, isPaused, showDeathMessage; // Flags for game state
+                // 安全获取游戏状态
+                bool isGameRunning, isPaused, showDeathMessage;
                 {
-                    std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex); // Lock the game state mutex
-                    isGameRunning = GameState::Instance().isGameRunning; // Get game running state
-                    isPaused = GameState::Instance().isPaused; // Get pause state
-                    showDeathMessage = GameState::Instance().showDeathMessage; // Get death message state
+                    std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex);
+                    isGameRunning = GameState::Instance().isGameRunning;
+                    isPaused = GameState::Instance().isPaused;
+                    showDeathMessage = GameState::Instance().showDeathMessage;
                 }
                 
-                // Update game time - only happens when not paused
+                // 仅在未暂停时更新游戏时间
                 if (isGameRunning && !isPaused) {
-                    GameState::Instance().UpdateGameTime(GameState::Instance().deltaTime); // Update game time
+                    GameState::Instance().UpdateGameTime(GameState::Instance().deltaTime);
                 }
                 
-                // Handle game end conditions
+// 处理游戏结束条件
                 if (!isGameRunning && showDeathMessage) {
-                    // Stop drawing and input threads to prevent interference
-                    GameState::Instance().SetIsGameRunning(false); // Set game running state to false
+                    // 停止绘制和输入线程以防止干扰
+                    GameState::Instance().SetIsGameRunning(false);
                     
-                    // 安全地等待线程结束
-                    if (input.joinable()) input.join(); // Join input thread
-                    if (draw.joinable()) draw.join(); // Join draw thread
+                    // 安全等待线程结束
+                    if (input.joinable()) input.join();
+                    if (draw.joinable()) draw.join();
                     
-                    cleardevice(); // Clear the device
+                    cleardevice(); // 清屏
                     
-                    // Show death message after game ends, ensure in main thread
-                    GameState::Instance().ShowDeathMessage(); // Show death message
+                    // 在主线程显示死亡消息
+                    GameState::Instance().ShowDeathMessage();
                     {
-                        std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex); // Lock the game state mutex
-                        GameState::Instance().showDeathMessage = false; // Reset death message state
+                        std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex);
+                        GameState::Instance().showDeathMessage = false;
                     }
                     
-                    // Set flag to exit game loop
-                    gameRunning = false; // Exit game loop
+                    gameRunning = false; // 退出游戏循环
                 }
                 
-                // 重新安全地获取游戏状态
+                // 重新安全获取游戏状态
                 {
-                    std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex); // Lock the game state mutex
-                    isGameRunning = GameState::Instance().isGameRunning; // Get game running state
-                    showDeathMessage = GameState::Instance().showDeathMessage; // Get death message state
+                    std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex);
+                    isGameRunning = GameState::Instance().isGameRunning;
+                    showDeathMessage = GameState::Instance().showDeathMessage;
                 }
                 
-                // Continue game if still running without death message
+                // 游戏结束且死亡消息已处理则继续
                 if (!isGameRunning && !showDeathMessage) {
-                    gameRunning = false;  // Exit game loop if game ended and death message processed
+                    gameRunning = false;
                 }
                 
-                Sleep(10);  // Reduce CPU usage
+                Sleep(10); // 降低CPU使用率
             }
 
-            // Clean up game resources
+// 清理游戏资源
             {
-                std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex); // Lock the game state mutex
+                std::lock_guard<std::mutex> lock(GameState::Instance().stateMutex);
                 if (GameState::Instance().isGameRunning) {
-                    GameState::Instance().isGameRunning = false;  // Ensure drawing thread exits
+                    GameState::Instance().isGameRunning = false;  // 确保绘制线程退出
                 }
             }
             
-            // 安全地等待线程结束
-            if (input.joinable()) input.join(); // Join input thread
-            if (draw.joinable()) draw.join(); // Join draw thread
+            // 安全等待线程结束
+            if (input.joinable()) input.join();
+            if (draw.joinable()) draw.join();
             
-            Sleep(500);  // Short delay to ensure resource cleanup
+            Sleep(500);  // 短暂延迟确保资源清理
             
-            // Determine what to do next
+            // 决定下一步操作
             if (GameState::Instance().returnToMenu) {
-                GameState::Instance().returnToMenu = false; // Reset return to menu flag
-                startGame = false;  // Exit game loop and return to menu loop
+                GameState::Instance().returnToMenu = false;
+                startGame = false;  // 退出游戏循环返回菜单
             } else if (GameState::Instance().exitGame) {
-                quitProgram = true;  // If exit is selected, set flag to exit the program
+                quitProgram = true;  // 退出程序
             } else {
-                // Keep startGame true to restart game
+                // 保持startGame为true以重新开始游戏
             }
         }
     }
 
-    // Clean up audio resources before exiting
-    CleanupAudioResources(); // Clean up audio resources
-    closegraph(); // Close graphics window
-    return 0; // Exit program
+    // 退出前清理资源
+    CleanupAudioResources(); // 清理音频资源
+    closegraph();            // 关闭图形窗口
+    return 0;                // 退出程序
 }
 

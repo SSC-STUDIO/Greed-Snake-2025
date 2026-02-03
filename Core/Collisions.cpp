@@ -1,13 +1,13 @@
+// Collision System - handles all game collision detection and effects
 #include "Collisions.h"
 #include "..\Gameplay\Snake.h"
 #include "..\Gameplay\Food.h"
-#include "..\Gameplay\GameConfig.h" // Include GameConfig to access ANIMATIONS_ON
-#include <cmath> // For sin/cos in particle effects
-#pragma warning(disable: 4996)	 // Disable security warnings for _tcscpy and _stprintf
+#include "..\Gameplay\GameConfig.h"
+#include <cmath>
+#pragma warning(disable: 4996)
 
 extern float animationTimer;
 
-// Track snake growth animation
 struct GrowthAnimation {
     bool active = false;
     float timer = 0.0f;
@@ -17,7 +17,6 @@ struct GrowthAnimation {
     float baseRadius;
 };
 
-// Global growth animation tracker
 static GrowthAnimation playerGrowthAnim;
 
 // Add helper function for AI snake eating animation effects

@@ -1,24 +1,33 @@
+/**
+ * @file GameState.h
+ * @brief 游戏状态管理器头文件
+ */
+
 #pragma once
 #include "../Core/Vector2.h"
 #include "../Gameplay/GameConfig.h"
 #include "../Core/Camera.h"
 #include "../Gameplay/Snake.h"
-#include <mutex> // Mutex header
+#include <mutex>
 #include <easyx.h>
-#include <conio.h> // Support for _kbhit() and _getch()
-#include <windows.h> // Support for GetAsyncKeyState
+#include <conio.h> 
+#include <windows.h> 
 #pragma warning(disable: 4996)
 
-// Use forward declarations instead of direct include
+// 前向声明避免循环包含
 class Snake;
 class PlayerSnake;
 class AISnake;
 
-// Game state management
+/**
+ * @brief 游戏状态管理类
+ * 
+ * 使用单例模式管理游戏状态、难度设置和时间控制
+ */
 class GameState {
 public:
     static GameState& Instance() {
-        static GameState instance; // Singleton
+        static GameState instance; 
         return instance;
     }
 
@@ -33,7 +42,7 @@ public:
         instance.isMouseControlEnabled = true;
         instance.isGameRunning = true;
         instance.isPaused = false;
-        instance.isMenuShowing = false; // 初始化菜单显示状态
+        instance.isMenuShowing = false; 
         instance.playerPosition = Vector2();
         instance.targetDirection = Vector2(0, 1);
         instance.deltaTime = 1.0f / 30.0f;
@@ -107,7 +116,7 @@ public:
     bool isMouseControlEnabled = true; // Whether mouse control is enabled
     bool isGameRunning = true; // Whether the game is running
     bool isPaused = false; // Whether the game is paused
-    bool isMenuShowing = false; // 指示暂停菜单是否正在显示
+    bool isMenuShowing = false; 
     Camera camera; // Camera
     Vector2 playerPosition; // Player position
     Vector2 targetDirection{ 0, 1 }; // Target direction

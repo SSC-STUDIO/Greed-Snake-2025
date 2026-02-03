@@ -1,13 +1,23 @@
+/**
+ * @file GameState.cpp
+ * @brief 游戏状态管理器 - 管理游戏状态、难度和计时
+ */
 #include "GameState.h"
 #include "../Core/Camera.h"
 #include "../UI/UI.h"
 #include "../Gameplay/GameConfig.h"
 #include "../UI/UI.h"
 
-// Add static variables initializations
+// 静态成员初始化
 DWORD GameState::lastTime = GetTickCount();
 bool GameState::exitGame = false;
 
+/**
+ * @brief 检查游戏状态
+ * @param snake 蛇数组指针
+ * 
+ * 检查蛇是否在游戏区域内，处理岩浆伤害和死亡逻辑
+ */
 void CheckGameState(Snake* snake) {
     auto& gameState = GameState::Instance();
     
@@ -34,6 +44,12 @@ void CheckGameState(Snake* snake) {
     }
 }
 
+/**
+ * @brief 设置游戏难度
+ * @param difficulty 难度枚举
+ * 
+ * 根据选择的难度设置相应的游戏参数
+ */
 void GameState::SetDifficulty(GameDifficulty difficulty)
 {
     currentDifficulty = difficulty; 
