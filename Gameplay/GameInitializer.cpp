@@ -154,13 +154,15 @@ void UpdatePlayerSnake(float deltaTime) {
 }
 
 void UpdateAISnakes(float deltaTime) {
+    const FoodSpatialGrid* foodGrid = GetFoodSpatialGrid();
+
     for (auto& aiSnake : aiSnakeList) {
-        aiSnake.Update(std::vector<FoodItem>(foodList, foodList + GameConfig::MAX_FOOD_COUNT), 
-                      deltaTime, 
-                      snake[0].position);
-        
-        float snakeSpeed = GameState::Instance().currentPlayerSpeed * 0.25f;
-        aiSnake.position = aiSnake.position + aiSnake.direction * snakeSpeed * deltaTime;
+        aiSnake.Update(
+            foodList,
+            GameConfig::MAX_FOOD_COUNT,
+            foodGrid,
+            deltaTime,
+            snake[0].position);
         
         aiSnake.RecordPos();
         
@@ -182,7 +184,9 @@ void UpdateAISnakes(float deltaTime) {
 
 void UpdateCamera() {
     auto& gameState = GameState::Instance();
-    Vector2 targetPos = snake[0].position - Vector2(GameConfig::WINDOW_WIDTH / 2, GameConfig::WINDOW_HEIGHT / 2);
+    Vector2 targetPos = snake[0].position - Vector2(
+        static_cast<float>(GameConfig::WINDOW_WIDTH) / 2.0f,
+        static_cast<float>(GameConfig::WINDOW_HEIGHT) / 2.0f);
     
     // Smooth camera movement
     gameState.camera.position = gameState.camera.position + 
@@ -232,7 +236,8 @@ int GetHistoryIndexAtDistance(const std::deque<Vector2>& positions, float target
     float currentDistance = 0.0f;
     
     // Search from the most recent position backwards
-    for (int i = positions.size() - 2; i >= 0; i--) {
+    const int lastIndex = static_cast<int>(positions.size()) - 2;
+    for (int i = lastIndex; i >= 0; i--) {
         float segmentLength = (positions[i+1] - positions[i]).GetLength();
         currentDistance += segmentLength;
         

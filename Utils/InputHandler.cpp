@@ -166,6 +166,9 @@ void EnterChanges() {
                 }
             }
         }
+
+        // Yield to reduce CPU usage in the input thread.
+        Sleep(1);
     }
 }
 

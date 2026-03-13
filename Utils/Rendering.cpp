@@ -3,6 +3,7 @@
  * @brief 渲染系统 - 处理所有游戏绘制和视觉效果
  */
 #include "Rendering.h"
+#include "DrawHelpers.h"
 #include <cmath>
 #pragma warning(disable: 4996)
 
@@ -31,36 +32,30 @@ void DrawGameArea() {
     // 绘制上边界
     if (screenTop < GameConfig::PLAY_AREA_TOP) {
         solidrectangle(0, 0,
-            GameConfig::WINDOW_WIDTH,
-            GameConfig::PLAY_AREA_TOP - cameraPos.y);
+            static_cast<int>(GameConfig::WINDOW_WIDTH),
+            static_cast<int>(GameConfig::PLAY_AREA_TOP - cameraPos.y));
     }
 
     // 绘制下边界岩浆区域
     if (screenBottom > GameConfig::PLAY_AREA_BOTTOM) {
         solidrectangle(0,
-            GameConfig::PLAY_AREA_BOTTOM - cameraPos.y,
-            GameConfig::WINDOW_WIDTH,
-            GameConfig::WINDOW_HEIGHT);
+            static_cast<int>(GameConfig::PLAY_AREA_BOTTOM - cameraPos.y),
+            static_cast<int>(GameConfig::WINDOW_WIDTH),
+            static_cast<int>(GameConfig::WINDOW_HEIGHT));
     }
 
-    // 绘制左边界岩浆区域
     if (screenLeft < GameConfig::PLAY_AREA_LEFT) {
         solidrectangle(0, 0,
-            GameConfig::PLAY_AREA_LEFT - cameraPos.x,
-            GameConfig::WINDOW_HEIGHT);
-    }
-    if (screenLeft < GameConfig::PLAY_AREA_LEFT) {
-        solidrectangle(0, 0,
-            GameConfig::PLAY_AREA_LEFT - cameraPos.x,
-            GameConfig::WINDOW_HEIGHT); // Draw lava area to the left of the play area
+            static_cast<int>(GameConfig::PLAY_AREA_LEFT - cameraPos.x),
+            static_cast<int>(GameConfig::WINDOW_HEIGHT)); // Draw lava area to the left of the play area
     }
 
     // Check and draw right boundary lava area
     if (screenRight > GameConfig::PLAY_AREA_RIGHT) {
-        solidrectangle(GameConfig::PLAY_AREA_RIGHT - cameraPos.x,
+        solidrectangle(static_cast<int>(GameConfig::PLAY_AREA_RIGHT - cameraPos.x),
             0,
-            GameConfig::WINDOW_WIDTH,
-            GameConfig::WINDOW_HEIGHT); // Draw lava area to the right of the play area
+            static_cast<int>(GameConfig::WINDOW_WIDTH),
+            static_cast<int>(GameConfig::WINDOW_HEIGHT)); // Draw lava area to the right of the play area
     }
 
     // Draw game boundary lines
@@ -74,9 +69,41 @@ void DrawGameArea() {
 
 // Function to draw food items
 void DrawFoods(const FoodItem* foodList, int foodCount) {
+    const FoodSpatialGrid* foodGrid = GetFoodSpatialGrid();
+    static thread_local std::vector<int> foodCandidates;
+
+    Vector2 cameraPos = GameState::Instance().camera.position;
+    float screenLeft = cameraPos.x;
+    float screenRight = cameraPos.x + GameConfig::WINDOW_WIDTH;
+    float screenTop = cameraPos.y;
+    float screenBottom = cameraPos.y + GameConfig::WINDOW_HEIGHT;
+
+    const Vector2 minPos(screenLeft, screenTop);
+    const Vector2 maxPos(screenRight, screenBottom);
+
+    if (foodGrid != nullptr) {
+        foodGrid->QueryRect(minPos, maxPos, foodCandidates);
+        for (int index : foodCandidates) {
+            if (index < 0 || index >= foodCount) continue;
+            if (foodList[index].collisionRadius <= 0) continue;
+            if (foodList[index].position.x < screenLeft || foodList[index].position.x > screenRight ||
+                foodList[index].position.y < screenTop || foodList[index].position.y > screenBottom) {
+                continue;
+            }
+
+            Vector2 screenPos = foodList[index].position - cameraPos;
+            if (GameConfig::ANIMATIONS_ON) {
+                DrawEnhancedFood(screenPos, foodList[index].collisionRadius, foodList[index].colorValue, index);
+            } else {
+                DrawCircleWithCamera(screenPos, foodList[index].collisionRadius, foodList[index].colorValue);
+            }
+        }
+        return;
+    }
+
     for (int i = 0; i < foodCount; ++i) {
         if (foodList[i].collisionRadius > 0) { // Check if the food item is active
-            Vector2 screenPos = foodList[i].position - GameState::Instance().camera.position; // Calculate screen position
+            Vector2 screenPos = foodList[i].position - cameraPos; // Calculate screen position
             
             // Use the enhanced food drawing function for consistent appearance
             if (GameConfig::ANIMATIONS_ON) {
@@ -107,21 +134,46 @@ void DrawVisibleObjects(const FoodItem* foodList, int foodCount,
     screenTop -= margin; // Expand top boundary
     screenBottom += margin; // Expand bottom boundary
 
-    // Only draw food within the visible area
-    for (int i = 0; i < foodCount; ++i) {
-        const auto& food = foodList[i]; // Get food item
-        if (food.collisionRadius <= 0) continue; // Skip if food is not active
-        
-        if (food.position.x >= screenLeft && food.position.x <= screenRight &&
-            food.position.y >= screenTop && food.position.y <= screenBottom) {
+    const FoodSpatialGrid* foodGrid = GetFoodSpatialGrid();
+    static thread_local std::vector<int> foodCandidates;
+
+    if (foodGrid != nullptr) {
+        foodGrid->QueryRect(Vector2(screenLeft, screenTop), Vector2(screenRight, screenBottom), foodCandidates);
+        for (int index : foodCandidates) {
+            if (index < 0 || index >= foodCount) continue;
+            const auto& food = foodList[index];
+            if (food.collisionRadius <= 0) continue;
+
+            if (food.position.x >= screenLeft && food.position.x <= screenRight &&
+                food.position.y >= screenTop && food.position.y <= screenBottom) {
+                
+                Vector2 foodScreenPos = food.position - cameraPos; // Calculate food screen position
+                
+                // Use enhanced food drawing function
+                if (GameConfig::ANIMATIONS_ON) {
+                    DrawEnhancedFood(foodScreenPos, food.collisionRadius, food.colorValue, index); // Draw food with animations
+                } else {
+                    DrawCircleWithCamera(foodScreenPos, food.collisionRadius, food.colorValue); // Draw food without animations
+                }
+            }
+        }
+    } else {
+        // Only draw food within the visible area
+        for (int i = 0; i < foodCount; ++i) {
+            const auto& food = foodList[i]; // Get food item
+            if (food.collisionRadius <= 0) continue; // Skip if food is not active
             
-            Vector2 foodScreenPos = food.position - cameraPos; // Calculate food screen position
-            
-            // Use enhanced food drawing function
-            if (GameConfig::ANIMATIONS_ON) {
-                DrawEnhancedFood(foodScreenPos, food.collisionRadius, food.colorValue, i); // Draw food with animations
-            } else {
-                DrawCircleWithCamera(foodScreenPos, food.collisionRadius, food.colorValue); // Draw food without animations
+            if (food.position.x >= screenLeft && food.position.x <= screenRight &&
+                food.position.y >= screenTop && food.position.y <= screenBottom) {
+                
+                Vector2 foodScreenPos = food.position - cameraPos; // Calculate food screen position
+                
+                // Use enhanced food drawing function
+                if (GameConfig::ANIMATIONS_ON) {
+                    DrawEnhancedFood(foodScreenPos, food.collisionRadius, food.colorValue, i); // Draw food with animations
+                } else {
+                    DrawCircleWithCamera(foodScreenPos, food.collisionRadius, food.colorValue); // Draw food without animations
+                }
             }
         }
     }
@@ -184,7 +236,7 @@ void DebugDrawText(const std::wstring& text, int x, int y, int color) {
 }
 
 // 添加蛇身体段渲染函数
-void DrawSnakeSegment(const Vector2& screenPos, float radius, int color, int segmentIndex) {
+void DrawSnakeSegment(const Vector2& screenPos, float radius, int color, size_t segmentIndex) {
     // 提取颜色分量
     int r = (color >> 16) & 0xFF;
     int g = (color >> 8) & 0xFF;
@@ -192,7 +244,7 @@ void DrawSnakeSegment(const Vector2& screenPos, float radius, int color, int seg
     
     // 为不同的身体段添加颜色变化
     // 根据段索引逐渐改变颜色亮度
-    float brightnessFactor = 1.0f - (segmentIndex * 0.03f);
+    float brightnessFactor = 1.0f - (static_cast<float>(segmentIndex) * 0.03f);
     brightnessFactor = max(0.6f, brightnessFactor);  // 不要太暗
     
     int segR = static_cast<int>(r * brightnessFactor);
@@ -200,7 +252,7 @@ void DrawSnakeSegment(const Vector2& screenPos, float radius, int color, int seg
     int segB = static_cast<int>(b * brightnessFactor);
     
     // 基于动画计时器添加轻微的大小变化
-    float pulseFactor = 1.0f + sin(animationTimer * 2 + segmentIndex * 0.3f) * 0.05f;
+    float pulseFactor = 1.0f + sin(animationTimer * 2 + static_cast<float>(segmentIndex) * 0.3f) * 0.05f;
     float pulseRadius = radius * pulseFactor;
     
     // 添加光晕效果

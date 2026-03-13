@@ -6,6 +6,7 @@
 #include "../Utils/Rendering.h"
 #include "Food.h"
 #include <queue>
+#include <deque>
 
 /**
  * @file Snake.h
@@ -14,6 +15,8 @@
 
 // FoodItem结构前向声明
 struct FoodItem;
+struct FoodSpatialGrid;
+struct FoodSpatialGrid;
 
 /**
  * @brief 蛇段结构体
@@ -99,7 +102,8 @@ public:
     }
 
     void Initialize();                                                       // 初始化AI蛇
-    void Update(const std::vector<FoodItem>& foodItems, float deltaTime, const Vector2& playerHeadPos); // 更新AI蛇
+    void Update(const FoodItem* foodItems, int foodCount, const FoodSpatialGrid* grid,
+                float deltaTime, const Vector2& playerHeadPos); // 更新AI蛇
     void Draw(const Camera& camera) const override;                          // 绘制AI蛇
     void UpdateDeathAnimation(float deltaTime);                              // 更新死亡动画
     void StartDying(int foodValue);                                          // 开始死亡过程

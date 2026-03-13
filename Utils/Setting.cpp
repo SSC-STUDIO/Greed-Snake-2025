@@ -1,6 +1,32 @@
 #include "Setting.h"
 #pragma comment(lib, "winmm.lib")
 
+namespace {
+int GetSnakeSpeedIndex(float speed) {
+    if (speed <= (GameConfig::PLAYER_SLOW_SPEED + GameConfig::PLAYER_NORMAL_SPEED) * 0.5f) {
+        return 0;
+    }
+
+    if (speed >= (GameConfig::PLAYER_NORMAL_SPEED + GameConfig::PLAYER_FAST_SPEED) * 0.5f) {
+        return 2;
+    }
+
+    return 1;
+}
+
+GameSettings CaptureCurrentSettings() {
+    const auto& gameState = GameState::Instance();
+
+    return {
+        GameConfig::DEFAULT_VOLUME,
+        gameState.difficulty,
+        GameConfig::SOUND_ON,
+        GetSnakeSpeedIndex(gameState.currentPlayerSpeed),
+        GameConfig::ANIMATIONS_ON
+    };
+}
+}
+
 // Set volume
 void SetVolume(float volume) {
     // Ensure volume is between 0 and 1
@@ -17,7 +43,7 @@ void SetVolume(float volume) {
 }
 
 // Apply settings
-void ApplySettings(GameSettings& settings) {
+void ApplySettings(const GameSettings& settings) {
     // Apply various settings
     SetVolume(settings.volume);
     
@@ -63,12 +89,8 @@ void ApplySettings(GameSettings& settings) {
 // Settings dialog
 void ShowSettings(int windowWidth, int windowHeight) {
     // Create game settings object and initialize with current settings
-    static GameSettings currentSettings = {
-        GameConfig::DEFAULT_VOLUME,     // Default volume
-        1,                              // Default difficulty: Normal
-        GameConfig::SOUND_ON,           // Default sound on
-        1                               // Default speed: Medium
-    };
+    GameSettings currentSettings = CaptureCurrentSettings();
+    const GameSettings originalSettings = currentSettings;
     
     // Create settings interface
     setfillcolor(RGB(30, 30, 30));
@@ -358,7 +380,7 @@ void ShowSettings(int windowWidth, int windowHeight) {
             // Check cancel button
             else if (msg.x >= cancelX && msg.x <= cancelX + settingButtonWidth &&
                      msg.y >= returnY && msg.y <= returnY + settingButtonHeight) {
-                // Don't apply settings
+                ApplySettings(originalSettings);
                 settingsOpen = false;
             }
         }

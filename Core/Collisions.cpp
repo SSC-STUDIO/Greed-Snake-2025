@@ -3,7 +3,9 @@
 #include "..\Gameplay\Snake.h"
 #include "..\Gameplay\Food.h"
 #include "..\Gameplay\GameConfig.h"
+#include "../Utils/DrawHelpers.h"
 #include <cmath>
+#include <vector>
 #pragma warning(disable: 4996)
 
 extern float animationTimer;
@@ -18,6 +20,12 @@ struct GrowthAnimation {
 };
 
 static GrowthAnimation playerGrowthAnim;
+
+namespace {
+bool CheckCircleCollision(const Vector2& pos1, float radius1, const Vector2& pos2, float radius2) {
+    return CollisionManager::CheckCircleCollision(pos1, radius1, pos2, radius2);
+}
+}
 
 // Add helper function for AI snake eating animation effects
 void DrawEatAISnakeEffect(const Vector2& position, int color, float radius) {
@@ -114,8 +122,10 @@ void DrawAISnakeHitPlayerEffect(const Vector2& position, int color, float radius
 }
 
 bool CollisionManager::CheckCircleCollision(const Vector2& pos1, float radius1, const Vector2& pos2, float radius2) {
-    float distance = (pos1 - pos2).GetLength();
-    return distance < (radius1 + radius2);
+    const Vector2 delta = pos1 - pos2;
+    const float distanceSq = delta.GetSquaredLength();
+    const float radiusSum = radius1 + radius2;
+    return distanceSq < (radiusSum * radiusSum);
 }
 
 bool CollisionManager::CheckSnakeCollision(const Snake& snake1, const Snake& snake2) {
@@ -183,6 +193,8 @@ void UpdateGrowthAnimation(float deltaTime) {
 void CollisionManager::CheckCollisions(Snake* snake, AISnake* aiSnakes, int aiSnakeCount, 
                                        FoodItem* foodList, int foodCount) {
     auto& gameState = GameState::Instance();
+    const FoodSpatialGrid* foodGrid = GetFoodSpatialGrid();
+    static thread_local std::vector<int> foodCandidates;
     
     if (!gameState.IsCollisionEnabled()) {
         if (gameState.isInvulnerable) {
@@ -469,60 +481,127 @@ void CollisionManager::CheckCollisions(Snake* snake, AISnake* aiSnakes, int aiSn
     }
 
     // 3. Check player collision with food
-    for (int i = 0; i < foodCount; i++) {
-        if (foodList[i].collisionRadius > 0 && // Only check valid food
-            CheckCircleCollision(
+    if (foodGrid != nullptr) {
+        const float searchRadius = snake[0].radius + 10.0f;
+        const Vector2 minPos = snake[0].position - Vector2(searchRadius, searchRadius);
+        const Vector2 maxPos = snake[0].position + Vector2(searchRadius, searchRadius);
+        foodGrid->QueryRect(minPos, maxPos, foodCandidates);
+
+        for (int index : foodCandidates) {
+            if (index < 0 || index >= foodCount) continue;
+            if (foodList[index].collisionRadius <= 0) continue;
+
+            if (CheckCircleCollision(
                 snake[0].position, snake[0].radius,
-                foodList[i].position, foodList[i].collisionRadius)) {
+                foodList[index].position, foodList[index].collisionRadius)) {
+                
+                // Play food eaten animation effect - only if animations are enabled
+                if (GameConfig::ANIMATIONS_ON) {
+                    Vector2 eatEffectPos = foodList[index].position - GameState::Instance().camera.position;
+                    // Draw a halo effect
+                    setlinecolor(foodList[index].colorValue);
+                    circle(eatEffectPos.x, eatEffectPos.y, foodList[index].collisionRadius * 2);
+                    circle(eatEffectPos.x, eatEffectPos.y, foodList[index].collisionRadius * 2.5);
+                    
+                    // Display score animation
+                    settextcolor(RGB(255, 215, 0)); // Gold
+                    settextstyle(20, 0, _T("Arial"));
+                    TCHAR scoreText[50];
+                    _stprintf(scoreText, _T("+1"));
+                    outtextxy(eatEffectPos.x - 10, eatEffectPos.y - 25, scoreText);
+                    
+                    // Start growth animation
+                    playerGrowthAnim.active = true;
+                    playerGrowthAnim.timer = 0.0f;
+                    playerGrowthAnim.position = snake[0].position;
+                    playerGrowthAnim.color = snake[0].color;
+                    playerGrowthAnim.baseRadius = snake[0].radius;
+                }
 
-            // Play food eaten animation effect - only if animations are enabled
-            if (GameConfig::ANIMATIONS_ON) {
-                Vector2 eatEffectPos = foodList[i].position - GameState::Instance().camera.position;
-                // Draw a halo effect
-                setlinecolor(foodList[i].colorValue);
-                circle(eatEffectPos.x, eatEffectPos.y, foodList[i].collisionRadius * 2);
-                circle(eatEffectPos.x, eatEffectPos.y, foodList[i].collisionRadius * 2.5);
+                // Mark food as eaten
+                foodList[index].collisionRadius = 0;
+
+                // Handle food collection
+                gameState.AddFoodEaten();
+
+                // Grow snake body by increasing radius
+                float growthAmount = (gameState.foodEatenCount == 0) ?
+                    GameConfig::SNAKE_GROWTH_LARGE : GameConfig::SNAKE_GROWTH_SMALL;
+                snake[0].radius = min(snake[0].radius + growthAmount, GameConfig::MAX_SNAKE_SIZE);
                 
-                // Display score animation
-                settextcolor(RGB(255, 215, 0)); // Gold
-                settextstyle(20, 0, _T("Arial"));
-                TCHAR scoreText[50];
-                _stprintf(scoreText, _T("+1"));
-                outtextxy(eatEffectPos.x - 10, eatEffectPos.y - 25, scoreText);
-                
-                // Start growth animation
-                playerGrowthAnim.active = true;
-                playerGrowthAnim.timer = 0.0f;
-                playerGrowthAnim.position = snake[0].position;
-                playerGrowthAnim.color = snake[0].color;
-                playerGrowthAnim.baseRadius = snake[0].radius;
+                // Add a new segment to the snake's body
+                size_t numSegments = snake[0].segments.size();
+                if (numSegments > 0) {
+                    // Create new segment based on the last existing segment
+                    Snake newSegment;
+                    newSegment.position = snake[0].segments[numSegments - 1].position;
+                    newSegment.direction = snake[0].segments[numSegments - 1].direction;
+                    newSegment.radius = snake[0].segments[numSegments - 1].radius;
+                    newSegment.color = snake[0].segments[numSegments - 1].color;
+                    newSegment.posRecords = std::queue<Vector2>();
+                    newSegment.currentTime = 0;
+                    
+                    // Add the new segment to the snake
+                    snake[0].segments.push_back(newSegment);
+                }
             }
+        }
+    } else {
+        for (int i = 0; i < foodCount; i++) {
+            if (foodList[i].collisionRadius > 0 && // Only check valid food
+                CheckCircleCollision(
+                    snake[0].position, snake[0].radius,
+                    foodList[i].position, foodList[i].collisionRadius)) {
 
-            // Mark food as eaten
-            foodList[i].collisionRadius = 0;
+                // Play food eaten animation effect - only if animations are enabled
+                if (GameConfig::ANIMATIONS_ON) {
+                    Vector2 eatEffectPos = foodList[i].position - GameState::Instance().camera.position;
+                    // Draw a halo effect
+                    setlinecolor(foodList[i].colorValue);
+                    circle(eatEffectPos.x, eatEffectPos.y, foodList[i].collisionRadius * 2);
+                    circle(eatEffectPos.x, eatEffectPos.y, foodList[i].collisionRadius * 2.5);
+                    
+                    // Display score animation
+                    settextcolor(RGB(255, 215, 0)); // Gold
+                    settextstyle(20, 0, _T("Arial"));
+                    TCHAR scoreText[50];
+                    _stprintf(scoreText, _T("+1"));
+                    outtextxy(eatEffectPos.x - 10, eatEffectPos.y - 25, scoreText);
+                    
+                    // Start growth animation
+                    playerGrowthAnim.active = true;
+                    playerGrowthAnim.timer = 0.0f;
+                    playerGrowthAnim.position = snake[0].position;
+                    playerGrowthAnim.color = snake[0].color;
+                    playerGrowthAnim.baseRadius = snake[0].radius;
+                }
 
-            // Handle food collection
-            gameState.AddFoodEaten();
+                // Mark food as eaten
+                foodList[i].collisionRadius = 0;
 
-            // Grow snake body by increasing radius
-            float growthAmount = (gameState.foodEatenCount == 0) ?
-                GameConfig::SNAKE_GROWTH_LARGE : GameConfig::SNAKE_GROWTH_SMALL;
-            snake[0].radius = min(snake[0].radius + growthAmount, GameConfig::MAX_SNAKE_SIZE);
-            
-            // Add a new segment to the snake's body
-            size_t numSegments = snake[0].segments.size();
-            if (numSegments > 0) {
-                // Create new segment based on the last existing segment
-                Snake newSegment;
-                newSegment.position = snake[0].segments[numSegments - 1].position;
-                newSegment.direction = snake[0].segments[numSegments - 1].direction;
-                newSegment.radius = snake[0].segments[numSegments - 1].radius;
-                newSegment.color = snake[0].segments[numSegments - 1].color;
-                newSegment.posRecords = std::queue<Vector2>();
-                newSegment.currentTime = 0;
+                // Handle food collection
+                gameState.AddFoodEaten();
+
+                // Grow snake body by increasing radius
+                float growthAmount = (gameState.foodEatenCount == 0) ?
+                    GameConfig::SNAKE_GROWTH_LARGE : GameConfig::SNAKE_GROWTH_SMALL;
+                snake[0].radius = min(snake[0].radius + growthAmount, GameConfig::MAX_SNAKE_SIZE);
                 
-                // Add the new segment to the snake
-                snake[0].segments.push_back(newSegment);
+                // Add a new segment to the snake's body
+                size_t numSegments = snake[0].segments.size();
+                if (numSegments > 0) {
+                    // Create new segment based on the last existing segment
+                    Snake newSegment;
+                    newSegment.position = snake[0].segments[numSegments - 1].position;
+                    newSegment.direction = snake[0].segments[numSegments - 1].direction;
+                    newSegment.radius = snake[0].segments[numSegments - 1].radius;
+                    newSegment.color = snake[0].segments[numSegments - 1].color;
+                    newSegment.posRecords = std::queue<Vector2>();
+                    newSegment.currentTime = 0;
+                    
+                    // Add the new segment to the snake
+                    snake[0].segments.push_back(newSegment);
+                }
             }
         }
     }
@@ -533,17 +612,40 @@ void CollisionManager::CheckCollisions(Snake* snake, AISnake* aiSnakes, int aiSn
         if (aiSnakes[i].radius <= 0) continue;
         
         AISnake& aiSnake = aiSnakes[i];
-        for (int j = 0; j < foodCount; j++) {
-            if (foodList[j].collisionRadius > 0 && // Only check valid food
-                CheckCircleCollision(
-                    aiSnake.position, aiSnake.radius,
-                    foodList[j].position, foodList[j].collisionRadius)) {
 
-                // Mark food as eaten
-                foodList[j].collisionRadius = 0;
+        if (foodGrid != nullptr) {
+            const float searchRadius = aiSnake.radius + 10.0f;
+            const Vector2 minPos = aiSnake.position - Vector2(searchRadius, searchRadius);
+            const Vector2 maxPos = aiSnake.position + Vector2(searchRadius, searchRadius);
+            foodGrid->QueryRect(minPos, maxPos, foodCandidates);
 
-                // AI snake also grows after eating food
-                aiSnake.radius = min(aiSnake.radius + GameConfig::SNAKE_GROWTH_SMALL, GameConfig::MAX_SNAKE_SIZE);
+            for (int index : foodCandidates) {
+                if (index < 0 || index >= foodCount) continue;
+                if (foodList[index].collisionRadius <= 0) continue;
+
+                if (CheckCircleCollision(
+                        aiSnake.position, aiSnake.radius,
+                        foodList[index].position, foodList[index].collisionRadius)) {
+                    // Mark food as eaten
+                    foodList[index].collisionRadius = 0;
+
+                    // AI snake also grows after eating food
+                    aiSnake.radius = min(aiSnake.radius + GameConfig::SNAKE_GROWTH_SMALL, GameConfig::MAX_SNAKE_SIZE);
+                }
+            }
+        } else {
+            for (int j = 0; j < foodCount; j++) {
+                if (foodList[j].collisionRadius > 0 && // Only check valid food
+                    CheckCircleCollision(
+                        aiSnake.position, aiSnake.radius,
+                        foodList[j].position, foodList[j].collisionRadius)) {
+
+                    // Mark food as eaten
+                    foodList[j].collisionRadius = 0;
+
+                    // AI snake also grows after eating food
+                    aiSnake.radius = min(aiSnake.radius + GameConfig::SNAKE_GROWTH_SMALL, GameConfig::MAX_SNAKE_SIZE);
+                }
             }
         }
     }
@@ -558,8 +660,9 @@ void CheckPlayerAISnakeCollision(PlayerSnake& player, AISnake& enemy)
 
     // Check collision between player head and AI body
     for (size_t i = 0; i < enemy.segments.size(); i++) {
-        Vector2 distance = player.position - enemy.segments[i].position;
-        if (distance.GetLength() < player.radius + enemy.segments[i].radius) {
+        if (CollisionManager::CheckCircleCollision(
+                player.position, player.radius,
+                enemy.segments[i].position, enemy.segments[i].radius)) {
             if (!player.isInvincible) {
                 // When hitting AI snake body, player loses a life
                 player.isInvincible = true;
@@ -576,8 +679,9 @@ void CheckPlayerAISnakeCollision(PlayerSnake& player, AISnake& enemy)
     }
     
     // Check collision between player head and AI head
-    Vector2 headDistance = player.position - enemy.position;
-    if (headDistance.GetLength() < player.radius + enemy.radius) {
+    if (CollisionManager::CheckCircleCollision(
+            player.position, player.radius,
+            enemy.position, enemy.radius)) {
         // If player head collides with AI snake head
         if (!player.isInvincible) {
             // Determine who eats whom based on snake size comparison
@@ -611,8 +715,9 @@ void CheckPlayerAISnakeCollision(PlayerSnake& player, AISnake& enemy)
     
     // Check collision between player body and AI head
     for (size_t i = 0; i < player.segments.size(); i++) {
-        Vector2 distance = enemy.position - player.segments[i].position;
-        if (distance.GetLength() < enemy.radius + player.segments[i].radius) {
+        if (CollisionManager::CheckCircleCollision(
+                enemy.position, enemy.radius,
+                player.segments[i].position, player.segments[i].radius)) {
             // AI snake hits player body, AI snake dies
             int foodValue = static_cast<int>(enemy.segments.size()) * 5;
             enemy.StartDying(foodValue);

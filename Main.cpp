@@ -1,6 +1,7 @@
 #include <graphics.h>
 #include <conio.h>
 #include <tchar.h>
+#include <io.h>
 #include <string>
 #include <vector>
 #include <thread>
@@ -59,6 +60,32 @@ FoodItem foodList[GameConfig::MAX_FOOD_COUNT];
 std::vector<SnakeSegment> snakeSegments(5); 
 std::vector<AISnake> aiSnakeList;
 Snake snake[1];  // 玩家蛇
+
+namespace {
+bool TryLoadMenuBackground(IMAGE& backgroundImage, IMAGE& scaledBackground) {
+    const TCHAR* kBackgroundPath = _T(".\\Resource\\Greed-Snake-BG.png");
+    if (_taccess(kBackgroundPath, 0) != 0) {
+        return false;
+    }
+
+    loadimage(&backgroundImage, kBackgroundPath);
+
+    scaledBackground.Resize(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
+    StretchBlt(GetImageHDC(&scaledBackground), 0, 0, GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT,
+        GetImageHDC(&backgroundImage), 0, 0, backgroundImage.getwidth(), backgroundImage.getheight(), SRCCOPY);
+
+    return true;
+}
+
+void DrawFallbackBackground() {
+    setfillcolor(RGB(20, 20, 20));
+    solidrectangle(0, 0, GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
+
+    settextstyle(24, 0, _T("Arial"));
+    settextcolor(RGB(200, 200, 200));
+    outtextxy(20, 20, _T("背景资源缺失：Resource\\Greed-Snake-BG.png"));
+}
+}
 
 // 游戏系统类 - 管理所有游戏对象和逻辑
 class GameSystem {
@@ -208,17 +235,16 @@ int main() {
     while (!quitProgram) {
         // 加载并缩放背景图片
         IMAGE backgroundImage;
-        loadimage(&backgroundImage, _T(".\\Resource\\Greed-Snake-BG.png"));
-
-        // 缩放背景以适应窗口
         IMAGE scaledBG;
-        scaledBG.Resize(GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT);
-        StretchBlt(GetImageHDC(&scaledBG), 0, 0, GameConfig::WINDOW_WIDTH, GameConfig::WINDOW_HEIGHT,
-            GetImageHDC(&backgroundImage), 0, 0, backgroundImage.getwidth(), backgroundImage.getheight(), SRCCOPY);
+        const bool hasBackground = TryLoadMenuBackground(backgroundImage, scaledBG);
 
         // 应用背景图片
         BeginBatchDraw();
-        putimage(0, 0, &scaledBG);
+        if (hasBackground) {
+            putimage(0, 0, &scaledBG);
+        } else {
+            DrawFallbackBackground();
+        }
         EndBatchDraw();
 
         // 菜单循环
@@ -355,11 +381,6 @@ while (showMenu && !quitProgram) {
                     isGameRunning = GameState::Instance().isGameRunning;
                     isPaused = GameState::Instance().isPaused;
                     showDeathMessage = GameState::Instance().showDeathMessage;
-                }
-                
-                // 仅在未暂停时更新游戏时间
-                if (isGameRunning && !isPaused) {
-                    GameState::Instance().UpdateGameTime(GameState::Instance().deltaTime);
                 }
                 
 // 处理游戏结束条件

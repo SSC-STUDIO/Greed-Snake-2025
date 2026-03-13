@@ -1,28 +1,15 @@
 #pragma once
 
 #include <graphics.h>
+#include <mutex>
 
 class ResourceManager {
 private:
     IMAGE backgroundImage;
     IMAGE scaledBackgroundImage;
-    bool resourcesLoaded;
-    
-public:
-    static ResourceManager& Instance();
-    ~ResourceManager();
-    
-    // Basic interface - just focus on loading
-    bool LoadAllResources();
-    void UnloadAllResources();
-    bool IsLoaded() const;
-};
-
-class ResourceManager {
-private:
-    IMAGE backgroundImage;
-    IMAGE scaledBackgroundImage;
-    bool resourcesLoaded;
+    bool resourcesLoaded = false;
+    int scaledWidth = 0;
+    int scaledHeight = 0;
     mutable std::mutex resourceMutex;
     
 public:

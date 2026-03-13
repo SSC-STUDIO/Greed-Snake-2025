@@ -38,10 +38,13 @@ namespace GameConfig {
     constexpr float AI_SPAWN_RADIUS = 2000.0f;  // Add spawn radius to distribute AI snakes
     constexpr float AI_MIN_SPEED = 0.5f;        // AI minimum speed multiplier
     constexpr float AI_MAX_SPEED = 0.9f;        // AI maximum speed multiplier
+    constexpr int FOOD_GRID_CELL_SIZE = 200;    // Spatial grid cell size for food queries
     constexpr float DEFAULT_VOLUME = 1.0f;  // Default volume level
     constexpr float VOLUME_STEP = 0.1f;     // Volume adjustment step
     constexpr float MAX_SNAKE_SIZE = 20.0f; // Set maximum snake size
-    const Vector2 PLAYER_DEFAULT_POS(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2); // Player default position
+    const Vector2 PLAYER_DEFAULT_POS(
+        static_cast<float>(WINDOW_WIDTH) / 2.0f,
+        static_cast<float>(WINDOW_HEIGHT) / 2.0f); // Player default position
     
     // Add collision-related configuration in GameConfig namespace
     constexpr float COLLISION_FLASH_DURATION = 0.5f;     // Collision flash duration

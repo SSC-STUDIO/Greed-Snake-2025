@@ -5,8 +5,9 @@
 #include <mutex>
 #include <condition_variable>
 #include <memory>
+#include <vector>
 #include "../Gameplay/GameConfig.h"
-#include "GameState.h"
+#include "ThreadManager.h"
 #include "../Gameplay/Snake.h"
 #include "Camera.h"
 #include "../Gameplay/Food.h"

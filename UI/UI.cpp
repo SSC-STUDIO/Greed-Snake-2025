@@ -3,6 +3,7 @@
 #include <conio.h>
 #include <mmsystem.h>
 #include "../Utils/Setting.h"
+#include "../Utils/DrawHelpers.h"
 #pragma comment(lib, "winmm.lib")
 
 // Global button list
@@ -13,7 +14,7 @@ void LoadButton()
 {
     const int buttonWidth = 200; // Button width
     const int buttonHeight = 50; // Button height
-    int buttonY = GameConfig::WINDOW_HEIGHT * 0.7 + 10; // Button Y coordinate
+    int buttonY = static_cast<int>(GameConfig::WINDOW_HEIGHT * 0.7f + 10.0f); // Button Y coordinate
     buttonList.resize(4); // Adjust button list size
     buttonList[StartGame].Initial(_T("Start Game"), Vector2(getwidth() / 2 - buttonWidth / 2, buttonY), Vector2(getwidth() / 2 + buttonWidth / 2, buttonY + buttonHeight), RGB(50, 150, 50), _T(".\\Resource\\SoundEffects\\Button-Click.wav")); // Initialize start game button
     buttonList[Setting].Initial(_T("./Resource/Setting.png"), Vector2(120, 10), Vector2(GameConfig::MENU_ICON_SIZE, GameConfig::MENU_ICON_SIZE), _T(".\\Resource\\SoundEffects\\Button-Click.wav")); // Initialize settings button

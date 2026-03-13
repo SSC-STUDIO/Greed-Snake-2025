@@ -1,6 +1,6 @@
 // GameEngine Core - manages game lifecycle and threading
 #include "GameEngine.h"
-#include "ThreadManager.h"
+#include "GameState.h"
 #include "ResourceManager.h"
 #include "Collisions.h"
 #include "../Utils/Rendering.h"
@@ -14,9 +14,10 @@
 GameEngine::GameEngine() 
     : animationTimer(0.0f), isInitialized(false),
       windowWidth(GameConfig::WINDOW_WIDTH),
-      windowHeight(GameConfig::WINDOW_HEIGHT) {
+      windowHeight(GameConfig::WINDOW_HEIGHT),
+      gameRunning(false) {
     
-    threadManager = std::make_unique<ThreadManager>();
+    threadManager.reset(new ThreadManager());
 }
 
 GameEngine::~GameEngine() {
@@ -25,6 +26,12 @@ GameEngine::~GameEngine() {
 
 void GameEngine::Run() {
     initgraph(windowWidth, windowHeight);
+
+    ResourceManager& resourceManager = ResourceManager::Instance();
+    if (!resourceManager.IsLoaded()) {
+        resourceManager.LoadAllResources();
+    }
+    resourceManager.ScaleBackgroundImage(windowWidth, windowHeight);
     
     PlayStartAnimation();
     
@@ -38,16 +45,17 @@ void GameEngine::Run() {
             quitProgram = GameState::Instance().exitGame;
         }
     }
-    
-        CleanupGame();
-        closegraph();
+
+    CleanupGame();
+    closegraph();
+}
 
 void GameEngine::HandleMenuLoop() {
         bool showMenu = true;
         bool startGame = false;
         
         while (showMenu) {
-            DrawBackground();
+            ResourceManager::Instance().DrawBackground();
             int menuChoice = ShowGameMenu();
         
         switch (menuChoice) {
@@ -59,12 +67,12 @@ void GameEngine::HandleMenuLoop() {
                 
             case 1:
                 ShowSettings(windowWidth, windowHeight);
-                DrawBackground();
+                ResourceManager::Instance().DrawBackground();
                 break;
                 
             case 2:
                 ShowAbout();
-                DrawBackground();
+                ResourceManager::Instance().DrawBackground();
                 break;
                 
             case 3:

@@ -128,11 +128,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Core\Camera.h" />
-    <ClInclude Include="Gameplay\Collisions.h" />
+    <ClInclude Include="Core\Collisions.h" />
     <ClInclude Include="Gameplay\Food.h" />
     <ClInclude Include="Gameplay\GameConfig.h" />
     <ClInclude Include="Gameplay\GameInitializer.h" />
-    <ClInclude Include="Gameplay\GameState.h" />
+    <ClInclude Include="Core\GameState.h" />
     <ClInclude Include="UI\Button.h" />
     <ClInclude Include="Utils\InputHandler.h" />
     <ClInclude Include="Utils\Rendering.h" />

@@ -1,6 +1,7 @@
 // Snake behavior - handles player and AI snake logic
 #include "Snake.h"
 #include "../Core/Collisions.h"
+#include "../Utils/DrawHelpers.h"
 
 Vector2 SnakeSegment::GetVelocity() const
 {
@@ -130,7 +131,8 @@ void AISnake::Initialize()
     currentTime = 0;
 }
 
-void AISnake::Update(const std::vector<FoodItem>& foodItems, float deltaTime, const Vector2& playerHeadPos)
+void AISnake::Update(const FoodItem* foodItems, int foodCount, const FoodSpatialGrid* grid,
+                     float deltaTime, const Vector2& playerHeadPos)
 {
     if (isDying) {
         UpdateDeathAnimation(deltaTime);
@@ -142,27 +144,50 @@ void AISnake::Update(const std::vector<FoodItem>& foodItems, float deltaTime, co
     if (directionChangeTimer >= GameConfig::AI_DIRECTION_CHANGE_TIME) {
         if (rand() % 100 < static_cast<int>(aggressionFactor * 100)) {
             Vector2 toPlayer = playerHeadPos - position;
-            float distToPlayer = toPlayer.GetLength();
+            const float viewRange = GameConfig::AI_VIEW_RANGE * 2.0f;
+            const float distToPlayerSq = toPlayer.GetSquaredLength();
             
-            if (distToPlayer < GameConfig::AI_VIEW_RANGE * 2) {
+            if (distToPlayerSq < viewRange * viewRange) {
                 direction = toPlayer.GetNormalize();
             } else {
                 float angle = (rand() % 360) * 3.14159f / 180.0f;
                 direction = Vector2(cos(angle), sin(angle));
             }
         } else {
-            float closestDist = GameConfig::AI_VIEW_RANGE;
+            const float viewRange = GameConfig::AI_VIEW_RANGE;
+            float closestDistSq = viewRange * viewRange;
             Vector2 closestFood = position;
             bool foodFound = false;
             
-            for (const auto& food : foodItems) {
-                if (food.collisionRadius <= 0) continue;
+            if (grid != nullptr) {
+                static thread_local std::vector<int> candidateIndices;
+                const Vector2 queryMin = position - Vector2(viewRange, viewRange);
+                const Vector2 queryMax = position + Vector2(viewRange, viewRange);
+                grid->QueryRect(queryMin, queryMax, candidateIndices);
                 
-                float dist = (food.position - position).GetLength();
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    closestFood = food.position;
-                    foodFound = true;
+                for (int index : candidateIndices) {
+                    if (index < 0 || index >= foodCount) continue;
+                    const auto& food = foodItems[index];
+                    if (food.collisionRadius <= 0) continue;
+                    
+                    float distSq = (food.position - position).GetSquaredLength();
+                    if (distSq < closestDistSq) {
+                        closestDistSq = distSq;
+                        closestFood = food.position;
+                        foodFound = true;
+                    }
+                }
+            } else {
+                for (int i = 0; i < foodCount; ++i) {
+                    const auto& food = foodItems[i];
+                    if (food.collisionRadius <= 0) continue;
+                    
+                    float distSq = (food.position - position).GetSquaredLength();
+                    if (distSq < closestDistSq) {
+                        closestDistSq = distSq;
+                        closestFood = food.position;
+                        foodFound = true;
+                    }
                 }
             }
             
@@ -221,7 +246,8 @@ const float borderAvoidDistance = 200.0f;
         segments[i].Update(deltaTime);
     }
     
-    for (const auto& food : foodItems) {
+    for (int i = 0; i < foodCount; ++i) {
+        const auto& food = foodItems[i];
         if (food.collisionRadius <= 0) continue;
         
         if (CheckCollisionWithPoint(food.position, food.collisionRadius)) {
