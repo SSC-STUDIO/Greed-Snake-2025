@@ -2,9 +2,60 @@
 #include <tchar.h>
 #include <conio.h>
 #include <mmsystem.h>
+#include <filesystem>
+#include <regex>
 #include "../Utils/Setting.h"
 #include "../Utils/DrawHelpers.h"
 #pragma comment(lib, "winmm.lib")
+
+// SECURITY: Path validation to prevent path traversal attacks
+bool validateResourcePath(const std::string& path) {
+    namespace fs = std::filesystem;
+    
+    try {
+        // Get canonical absolute paths
+        fs::path canonicalPath = fs::weakly_canonical(fs::absolute(path));
+        fs::path resourceRoot = fs::weakly_canonical(fs::absolute("./Resource/"));
+        
+        // Ensure path starts with resource root
+        std::string canonicalStr = canonicalPath.string();
+        std::string rootStr = resourceRoot.string();
+        
+        // Add trailing separator to root for proper prefix check
+        if (!rootStr.empty() && rootStr.back() != fs::path::preferred_separator) {
+            rootStr += fs::path::preferred_separator;
+        }
+        
+        if (canonicalStr.find(rootStr) != 0) {
+            return false;  // Path traversal attack detected!
+        }
+        
+        return true;
+    } catch (const std::exception&) {
+        return false;  // Invalid path
+    }
+}
+
+// SECURITY: Safe music playback with filename validation
+bool playMusicSafe(const std::string& filename) {
+    // Only allow alphanumeric, hyphen, underscore and standard extensions
+    if (!std::regex_match(filename, std::regex("^[\\w\\-]+\\.(mp3|wav|ogg)$", std::regex::icase))) {
+        return false;
+    }
+    
+    // Build full path and validate
+    std::string fullPath = "./Resource/SoundEffects/" + filename;
+    if (!validateResourcePath(fullPath)) {
+        return false;
+    }
+    
+    // Use safe command construction with quoted path
+    std::wstring wFullPath(fullPath.begin(), fullPath.end());
+    TCHAR cmd[512];
+    _stprintf_s(cmd, _T("open \"%s\" alias music"), wFullPath.c_str());
+    mciSendString(cmd, NULL, 0, NULL);
+    return true;
+}
 
 // Global button list
 std::vector<Button> buttonList;
