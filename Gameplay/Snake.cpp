@@ -389,6 +389,11 @@ void AISnake::CheckWallCollision()
 }
 
 void AISnake::UpdateDeathAnimation(float deltaTime) {
+    // SECURITY FIX: Check for valid segmentFadeTime to prevent division by zero
+    if (segmentFadeTime <= 0.0f) {
+        segmentFadeTime = 0.1f; // Set a safe default
+    }
+    
     deathTimer += deltaTime;
 
     int targetSegmentIndex = static_cast<int>(deathTimer / segmentFadeTime) - 1;

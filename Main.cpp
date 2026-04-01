@@ -57,15 +57,21 @@ float CalculateFrameDeltaTime() {
 void CopyPlayerSnapshot(PlayerSnake& snapshot) {
     auto& runtime = GameRuntime();
     auto& gameState = GameState::Instance();
-    std::lock_guard<std::mutex> lock(gameState.stateMutex);
+    
+    // SECURITY FIX: Lock both mutexes to prevent data race
+    std::lock(runtime.snakeMutex, gameState.stateMutex);
+    std::lock_guard<std::mutex> lock1(runtime.snakeMutex, std::adopt_lock);
+    std::lock_guard<std::mutex> lock2(gameState.stateMutex, std::adopt_lock);
 
+    // Now safely copy with consistent snapshot
+    const size_t size = runtime.snake[0].segments.size();
     snapshot.position = runtime.snake[0].position;
     snapshot.direction = runtime.snake[0].direction;
     snapshot.radius = runtime.snake[0].radius;
     snapshot.color = runtime.snake[0].color;
-
-    snapshot.segments.resize(runtime.snake[0].segments.size());
-    for (size_t i = 0; i < runtime.snake[0].segments.size(); ++i) {
+    
+    snapshot.segments.resize(size);
+    for (size_t i = 0; i < size; ++i) {
         snapshot.segments[i] = runtime.snake[0].segments[i];
     }
 }
