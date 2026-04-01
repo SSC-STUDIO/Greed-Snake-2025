@@ -11,8 +11,22 @@
 #include <mutex>
 #include <easyx.h>
 #include <conio.h> 
-#include <windows.h> 
+#include <windows.h>
+#include <cstdint>
 #pragma warning(disable: 4996)
+
+// CRC32 checksum for memory integrity verification
+inline uint32_t crc32(const void* data, size_t length) {
+    const uint8_t* bytes = static_cast<const uint8_t*>(data);
+    uint32_t crc = 0xFFFFFFFF;
+    for (size_t i = 0; i < length; ++i) {
+        crc ^= bytes[i];
+        for (int j = 0; j < 8; ++j) {
+            crc = (crc >> 1) ^ (0xEDB88320 & -(crc & 1));
+        }
+    }
+    return ~crc;
+}
 
 // 前向声明避免循环包含
 class Snake;
@@ -72,6 +86,10 @@ public:
         instance.returnToMenu = false;
         instance.currentDifficulty = GameDifficulty::Normal;
         instance.difficulty = 1; // Default to normal difficulty
+        
+        // SECURITY: Reset protected members with checksum
+        instance.score_ = 0;
+        instance.scoreChecksum_ = crc32(&instance.score_, sizeof(instance.score_));
         
         // Reset static members
         exitGame = false;
@@ -183,15 +201,44 @@ public:
 
     void ShowPauseMenu();
 
+    // SECURITY: Memory integrity protected score management
+    int GetScore() const {
+        std::lock_guard<std::mutex> lock(stateMutex);
+        // Verify integrity before returning
+        if (crc32(&score_, sizeof(score_)) != scoreChecksum_) {
+            // Detected memory tampering - trigger game over
+            exit(1);
+        }
+        return score_;
+    }
+    
+    void SetScore(int score) {
+        std::lock_guard<std::mutex> lock(stateMutex);
+        score_ = score;
+        scoreChecksum_ = crc32(&score_, sizeof(score_));
+    }
+    
+    void AddScore(int points) {
+        std::lock_guard<std::mutex> lock(stateMutex);
+        score_ += points;
+        scoreChecksum_ = crc32(&score_, sizeof(score_));
+    }
+
     // Add mutex for thread synchronization
     mutable std::mutex stateMutex;
 
     unsigned int worldSeed = 0; 
 
 private:
-    GameState() = default; // Private constructor
+    GameState() : score_(0), scoreChecksum_(0) {
+        scoreChecksum_ = crc32(&score_, sizeof(score_));
+    }
     GameState(const GameState&) = delete;
     GameState& operator=(const GameState&) = delete;
+    
+    // SECURITY: Protected members with checksum validation
+    int score_;
+    mutable uint32_t scoreChecksum_;
 };
 
 void CheckGameState(Snake* snake);
