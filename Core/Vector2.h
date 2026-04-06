@@ -24,7 +24,8 @@ struct Vector2
     Vector2(float xPos, float yPos) : x(xPos), y(yPos) {}
 
   
-    Vector2& Normalize(float epsilon = 0.0000001f) const;
+    // SECURITY FIX: Normalize now non-const to avoid const_cast UB
+    Vector2& Normalize(float epsilon = 0.0000001f);
    
     Vector2 GetNormalize(float epsilon = 0.0000001f) const;
    

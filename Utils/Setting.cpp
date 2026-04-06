@@ -106,6 +106,8 @@ void ShowSettings(int windowWidth, int windowHeight) {
     int sliderX = 150;
     int sliderY = 120;
     int sliderWidth = windowWidth - 300;
+    // SECURITY FIX: Ensure sliderWidth is positive to prevent division by zero
+    if (sliderWidth <= 0) sliderWidth = 100;
     int sliderHeight = 10;
     
     outtextxy(sliderX, sliderY - 40, _T("Volume"));

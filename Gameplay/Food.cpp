@@ -1,4 +1,5 @@
 #include "Food.h"
+#include "../Core/SecureRandom.h"
 #include <atomic>
 
 namespace {
@@ -104,29 +105,38 @@ const FoodSpatialGrid* GetFoodSpatialGrid() {
 }
 
 Vector2 GenerateRandomPosition() {
+    int width = GameConfig::PLAY_AREA_RIGHT - GameConfig::PLAY_AREA_LEFT;
+    int height = GameConfig::PLAY_AREA_BOTTOM - GameConfig::PLAY_AREA_TOP;
+    
+    // SECURITY FIX: Check for valid dimensions to prevent issues
+    if (width <= 0) width = 1;
+    if (height <= 0) height = 1;
+    
     float x = static_cast<float>(GameConfig::PLAY_AREA_LEFT) +
-        static_cast<float>(rand() % (GameConfig::PLAY_AREA_RIGHT - GameConfig::PLAY_AREA_LEFT));
+        static_cast<float>(RANDOM_INT(0, width));
     float y = static_cast<float>(GameConfig::PLAY_AREA_TOP) +
-        static_cast<float>(rand() % (GameConfig::PLAY_AREA_BOTTOM - GameConfig::PLAY_AREA_TOP));
+        static_cast<float>(RANDOM_INT(0, height));
     return Vector2(x, y);
 }
 
 void InitFood(FoodItem* foodList, int i, float speed) {
-    // Add parameter check
+    // SECURITY FIX: Add parameter validation
     if (!foodList || i < 0 || i >= GameConfig::MAX_FOOD_COUNT) {
         return; // Invalid parameters, return early
     }
     
     foodList[i].position = GenerateRandomPosition();
     foodList[i].colorValue = ColorGenerator::GenerateRandomColor();
-    foodList[i].collisionRadius = (rand() % 5000) / 1000.0f + 2;
+    // SECURITY FIX: Use secure random number generator instead of rand()
+    foodList[i].collisionRadius = RANDOM_FLOAT(2.0f, 7.0f);
 }
 
 void UpdateFoods(FoodItem* foodList, int foodCount) {
     for (int i = 0; i < foodCount; i++) {
         // Only respawn food when collision radius is 0, indicating the food was eaten
         if (foodList[i].collisionRadius <= 0) {
-            if (rand() % 100 < (GameState::Instance().foodSpawnRate * 100)) {
+            // SECURITY FIX: Use secure random number generator instead of rand()
+            if (RANDOM_FLOAT_01() < GameState::Instance().foodSpawnRate) {
                 InitFood(foodList, i, GameState::Instance().currentPlayerSpeed);
             }
         }

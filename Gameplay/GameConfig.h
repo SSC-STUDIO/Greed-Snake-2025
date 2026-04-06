@@ -1,5 +1,6 @@
 #pragma once
 #include "../Core/Vector2.h"
+#include "../Core/SecureRandom.h"
 #include <graphics.h>
 
 // Game configuration parameters
@@ -106,6 +107,8 @@ public:
 
 private:
     static int GenerateColorComponent() {
-        return static_cast<int>((rand() % 5000 / 1000.0 + 1) * 255 / 6.0 + 0.5); // Generate color component
+        // SECURITY FIX: Use secure random number generator instead of rand()
+        float randomFactor = RANDOM_FLOAT(0.0f, 5.0f);  // [0, 5)
+        return static_cast<int>((randomFactor + 1.0f) * 255.0f / 6.0f + 0.5f); // Generate color component
     }
 };

@@ -1,5 +1,6 @@
 #include "Snake.h"
 #include "../Core/Collisions.h"
+#include "../Core/SecureRandom.h"
 #include "../Utils/DrawHelpers.h"
 
 Vector2 SnakeSegment::GetVelocity() const
@@ -274,10 +275,10 @@ void AISnake::Update(const FoodItem* foodItems, int foodCount, const FoodSpatial
 
             Direction newDir = currentDir;
             switch (currentDir) {
-                case UP: newDir = (canRight && rand() % 3 == 0) ? RIGHT : (canLeft && rand() % 3 == 0) ? LEFT : UP; break;
-                case DOWN: newDir = (canRight && rand() % 3 == 0) ? RIGHT : (canLeft && rand() % 3 == 0) ? LEFT : DOWN; break;
-                case LEFT: newDir = (canUp && rand() % 3 == 0) ? UP : (canDown && rand() % 3 == 0) ? DOWN : LEFT; break;
-                case RIGHT: newDir = (canUp && rand() % 3 == 0) ? UP : (canDown && rand() % 3 == 0) ? DOWN : RIGHT; break;
+                case UP: newDir = (canRight && RANDOM_INT(3) == 0) ? RIGHT : (canLeft && RANDOM_INT(3) == 0) ? LEFT : UP; break;
+                case DOWN: newDir = (canRight && RANDOM_INT(3) == 0) ? RIGHT : (canLeft && RANDOM_INT(3) == 0) ? LEFT : DOWN; break;
+                case LEFT: newDir = (canUp && RANDOM_INT(3) == 0) ? UP : (canDown && RANDOM_INT(3) == 0) ? DOWN : LEFT; break;
+                case RIGHT: newDir = (canUp && RANDOM_INT(3) == 0) ? UP : (canDown && RANDOM_INT(3) == 0) ? DOWN : RIGHT; break;
             }
             nextDir = newDir;
         }
@@ -312,7 +313,7 @@ void AISnake::Update(const FoodItem* foodItems, int foodCount, const FoodSpatial
         bool canRight = (currentDir != LEFT) && (gridX < GameConfig::WINDOW_WIDTH / GameConfig::GRID_CELL_SIZE - 1);
 
         Direction newDir = currentDir;
-        float randVal = static_cast<float>(rand() % 100) / 100.0f;
+        float randVal = static_cast<float>(RANDOM_INT(0, 100)) / 100.0f;
 
         if (randVal < aggressionFactor * 0.5f) {
             Vector2 toPlayer = playerHeadPos - position;
@@ -326,24 +327,24 @@ void AISnake::Update(const FoodItem* foodItems, int foodCount, const FoodSpatial
         } else {
             switch (currentDir) {
                 case UP:
-                    if (canRight && rand() % 4 == 0) newDir = RIGHT;
-                    else if (canLeft && rand() % 4 == 0) newDir = LEFT;
-                    else if (!canUp) newDir = (rand() % 2 == 0) ? (canRight ? RIGHT : LEFT) : (canLeft ? LEFT : RIGHT);
+                    if (canRight && RANDOM_INT(4) == 0) newDir = RIGHT;
+                    else if (canLeft && RANDOM_INT(4) == 0) newDir = LEFT;
+                    else if (!canUp) newDir = (RANDOM_BOOL()) ? (canRight ? RIGHT : LEFT) : (canLeft ? LEFT : RIGHT);
                     break;
                 case DOWN:
-                    if (canRight && rand() % 4 == 0) newDir = RIGHT;
-                    else if (canLeft && rand() % 4 == 0) newDir = LEFT;
-                    else if (!canDown) newDir = (rand() % 2 == 0) ? (canRight ? RIGHT : LEFT) : (canLeft ? LEFT : RIGHT);
+                    if (canRight && RANDOM_INT(4) == 0) newDir = RIGHT;
+                    else if (canLeft && RANDOM_INT(4) == 0) newDir = LEFT;
+                    else if (!canDown) newDir = (RANDOM_BOOL()) ? (canRight ? RIGHT : LEFT) : (canLeft ? LEFT : RIGHT);
                     break;
                 case LEFT:
-                    if (canUp && rand() % 4 == 0) newDir = UP;
-                    else if (canDown && rand() % 4 == 0) newDir = DOWN;
-                    else if (!canLeft) newDir = (rand() % 2 == 0) ? (canUp ? UP : DOWN) : (canDown ? DOWN : UP);
+                    if (canUp && RANDOM_INT(4) == 0) newDir = UP;
+                    else if (canDown && RANDOM_INT(4) == 0) newDir = DOWN;
+                    else if (!canLeft) newDir = (RANDOM_BOOL()) ? (canUp ? UP : DOWN) : (canDown ? DOWN : UP);
                     break;
                 case RIGHT:
-                    if (canUp && rand() % 4 == 0) newDir = UP;
-                    else if (canDown && rand() % 4 == 0) newDir = DOWN;
-                    else if (!canRight) newDir = (rand() % 2 == 0) ? (canUp ? UP : DOWN) : (canDown ? DOWN : UP);
+                    if (canUp && RANDOM_INT(4) == 0) newDir = UP;
+                    else if (canDown && RANDOM_INT(4) == 0) newDir = DOWN;
+                    else if (!canRight) newDir = (RANDOM_BOOL()) ? (canUp ? UP : DOWN) : (canDown ? DOWN : UP);
                     break;
             }
         }
@@ -365,25 +366,25 @@ void AISnake::CheckWallCollision()
     if (position.x < GameConfig::GRID_CELL_SIZE / 2) {
         position.x = GameConfig::GRID_CELL_SIZE / 2;
         if (currentDir == LEFT) {
-            nextDir = (rand() % 2 == 0) ? UP : DOWN;
+            nextDir = (RANDOM_BOOL()) ? UP : DOWN;
         }
     }
     if (position.x > GameConfig::WINDOW_WIDTH - GameConfig::GRID_CELL_SIZE / 2) {
         position.x = GameConfig::WINDOW_WIDTH - GameConfig::GRID_CELL_SIZE / 2;
         if (currentDir == RIGHT) {
-            nextDir = (rand() % 2 == 0) ? UP : DOWN;
+            nextDir = (RANDOM_BOOL()) ? UP : DOWN;
         }
     }
     if (position.y < GameConfig::GRID_CELL_SIZE / 2) {
         position.y = GameConfig::GRID_CELL_SIZE / 2;
         if (currentDir == UP) {
-            nextDir = (rand() % 2 == 0) ? LEFT : RIGHT;
+            nextDir = (RANDOM_BOOL()) ? LEFT : RIGHT;
         }
     }
     if (position.y > GameConfig::WINDOW_HEIGHT - GameConfig::GRID_CELL_SIZE / 2) {
         position.y = GameConfig::WINDOW_HEIGHT - GameConfig::GRID_CELL_SIZE / 2;
         if (currentDir == DOWN) {
-            nextDir = (rand() % 2 == 0) ? LEFT : RIGHT;
+            nextDir = (RANDOM_BOOL()) ? LEFT : RIGHT;
         }
     }
 }

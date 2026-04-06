@@ -32,6 +32,10 @@ struct Vector2 {
     }
     
     [[nodiscard]] constexpr Vector2 operator/(float scalar) const {
+        // SECURITY FIX: Prevent division by zero
+        if (scalar == 0.0f) {
+            return Vector2{0.0f, 0.0f};
+        }
         return Vector2{x / scalar, y / scalar};
     }
     
@@ -55,8 +59,11 @@ struct Vector2 {
     }
     
     constexpr Vector2& operator/=(float scalar) {
-        x /= scalar;
-        y /= scalar;
+        // SECURITY FIX: Prevent division by zero
+        if (scalar != 0.0f) {
+            x /= scalar;
+            y /= scalar;
+        }
         return *this;
     }
     

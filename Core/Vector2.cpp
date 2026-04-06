@@ -12,22 +12,21 @@
 #include "Vector2.h"
 
 // Vector normalization - makes vector length = 1
-Vector2& Vector2::Normalize(float epsilon) const
+// SECURITY FIX: Removed const_cast by making method non-const
+Vector2& Vector2::Normalize(float epsilon)
 {
     float length = GetLength();
     if (length < epsilon)
     {
-        Vector2& mutableVector = const_cast<Vector2&>(*this);
-        mutableVector.x = 0.0f;
-        mutableVector.y = 0.0f;
-        return mutableVector;
+        x = 0.0f;
+        y = 0.0f;
+        return *this;
     }
     
     float inverseLength = 1.0f / length;
-    Vector2& mutableVector = const_cast<Vector2&>(*this);
-    mutableVector.x *= inverseLength;
-    mutableVector.y *= inverseLength;
-    return mutableVector;
+    x *= inverseLength;
+    y *= inverseLength;
+    return *this;
 }
 
 // Get normalized copy of vector
@@ -83,6 +82,11 @@ Vector2 Vector2::operator*(const float scale) const
 
 Vector2 Vector2::operator/(const float scale) const
 {
+    // SECURITY FIX: Prevent division by zero
+    if (scale == 0.0f)
+    {
+        return Vector2(0.0f, 0.0f);  // Return zero vector instead of INF/NaN
+    }
     return Vector2(x / scale, y / scale);
 }
 
